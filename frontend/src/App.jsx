@@ -37,6 +37,19 @@ function salvarMotorista(evento) {
   })
 }
 
+function deletarMotorista(idDelete){
+
+fetch('http://127.0.0.1:8000/motoristas/' + idDelete, {
+  method:'DELETE'
+})
+.then(() => {
+  const listaAtualizada = motoristas.filter((motorista) => motorista.id !== idDelete)
+
+  setMotoristas(listaAtualizada)
+})
+
+}
+
 return (
     <div>
       <h1>RamosDATA - Motoristas</h1>
@@ -67,6 +80,9 @@ return (
         {motoristas.map((motorista) => (
           <li key={motorista.id}>
             ID {motorista.id}: {motorista.nome} - CPF: {motorista.cpf}
+
+            <button onClick={() => deletarMotorista(motorista.id)}>Excluir</button>
+
           </li>
         ))}
       </ul>
