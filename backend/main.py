@@ -28,45 +28,45 @@ def get_db():
     finally:
         db.close()
 
-# MÉTODOS - MOTORISTAS
+# MÉTODOS - FUNCIONÁRIOS
 
     # CRIAR
-@app.post("/motoristas/", response_model=schemas.MotoristaResponse)
-def criar_motorista(motorista: schemas.MotoristaCreate, db: Session = Depends (get_db)):
-    return crud.create_motorista(db=db, motorista=motorista)
+@app.post("/funcionarios/", response_model=schemas.FuncionarioResponse)
+def criar_funcionario(funcionario: schemas.FuncionarioCreate, db: Session = Depends (get_db)):
+    return crud.create_funcionario(db=db, funcionario=funcionario)
 
     # LISTAR
-@app.get("/motoristas/", response_model=List[schemas.MotoristaResponse])
-def listar_motoristas(skip: int=0, limit: int=100, db: Session = Depends (get_db)):
-    return crud.get_motoristas(db=db, skip=skip,limit=limit)
+@app.get("/funcionarios/", response_model=List[schemas.FuncionarioResponse])
+def listar_funcionarios(skip: int=0, limit: int=100, db: Session = Depends (get_db)):
+    return crud.get_funcionarios(db=db, skip=skip,limit=limit)
 
     # LISTAR(ID)
-@app.get("/motoristas/{motorista_id}", response_model=schemas.MotoristaResponse)
-def listar_motorista_id(motorista_id: int, db: Session = Depends (get_db)):
-    db_motorista = crud.get_motorista_by_id(db=db, motorista_id=motorista_id)
+@app.get("/funcionarios/{funcionario_id}", response_model=schemas.FuncionarioResponse)
+def listar_funcionario_id(funcionario_id: int, db: Session = Depends (get_db)):
+    db_funcionario = crud.get_funcionario_by_id(db=db, funcionario_id=funcionario_id)
 
-    if db_motorista is None:
-        raise HTTPException(status_code=404, detail="Motorista não encontrado")
-    return db_motorista
+    if db_funcionario is None:
+        raise HTTPException(status_code=404, detail="Funcionario não encontrado")
+    return db_funcionario
 
     # ATUALIZAR
-@app.put("/motoristas/{motorista_id}", response_model=schemas.MotoristaResponse)
-def atualizar_motorista(motorista_id: int, updating_motorista: schemas.MotoristaCreate, db: Session = Depends(get_db)):
+@app.put("/funcionarios/{funcionario_id}", response_model=schemas.FuncionarioResponse)
+def atualizar_funcionario(funcionario_id: int, updating_funcionario: schemas.FuncionarioCreate, db: Session = Depends(get_db)):
 
-    db_motorista = crud.update_motorista(db=db,motorista_id=motorista_id,updating_motorista=updating_motorista)
+    db_funcionario = crud.update_funcionario(db=db,funcionario_id=funcionario_id,updating_funcionario=updating_funcionario)
 
-    if db_motorista is None:
-        raise HTTPException(status_code=404, detail="Motorista não encontrado")
-    return db_motorista
+    if db_funcionario is None:
+        raise HTTPException(status_code=404, detail="Funcionario não encontrado")
+    return db_funcionario
 
     # DELETAR
-@app.delete("/motoristas/{motorista_id}", response_model=schemas.MotoristaResponse)
-def deletar_motorista(motorista_id: int, db:Session = Depends(get_db)):
-    db_motorista = crud.delete_motorista(db=db, motorista_id=motorista_id)
+@app.delete("/funcionarios/{funcionario_id}", response_model=schemas.FuncionarioResponse)
+def deletar_funcionario(funcionario_id: int, db:Session = Depends(get_db)):
+    db_funcionario = crud.delete_funcionario(db=db, funcionario_id=funcionario_id)
 
-    if db_motorista is None:
-        raise HTTPException(status_code=404, detail="Motorista não encontrado")
-    return db_motorista
+    if db_funcionario is None:
+        raise HTTPException(status_code=404, detail="Funcionario não encontrado")
+    return db_funcionario
 
 # MÉTODOS - VENDEDORES
 
@@ -106,45 +106,6 @@ def deletar_vendedor(vendedor_id: int, db:Session = Depends(get_db)):
     if db_vendedor is None:
         raise HTTPException(status_code=404, detail="Vendedor não encontrado")
     return db_vendedor
-
-# MÉTODOS - AJUDANTES
-
-    # CRIAR
-@app.post("/ajudantes/", response_model=schemas.AjudanteResponse)
-def criar_ajudante(ajudante: schemas.AjudanteCreate, db:Session = Depends(get_db)):
-    return crud.create_ajudante(db=db, ajudante=ajudante)
-
-    # LISTAR
-@app.get("/ajudantes/", response_model=List[schemas.AjudanteResponse])
-def listar_ajudantes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_ajudantes(db=db, skip=skip, limit=limit)
-
-    # LISTAR(ID)
-@app.get("/ajudantes/{ajudante_id}", response_model=schemas.AjudanteResponse)
-def listar_ajudante_id(ajudante_id: int, db:Session = Depends(get_db)):
-    db_ajudante = crud.get_ajudante_by_id(db=db,ajudante_id=ajudante_id)
-
-    if db_ajudante is None:
-        raise HTTPException(status_code=404, detail="Ajudante não encontrado")
-    return db_ajudante
-
-    # ATUALIZAR
-@app.put("/ajudantes/{ajudante_id}", response_model=schemas.AjudanteResponse)
-def atualizar_ajudante(ajudante_id: int, updating_ajudante: schemas.AjudanteCreate, db:Session = Depends(get_db)):
-    db_ajudante = crud.update_ajudante(db=db, ajudante_id=ajudante_id, updating_ajudante=updating_ajudante)
-
-    if db_ajudante is None:
-        raise HTTPException(status_code=404, detail="Ajudante não encontrado")
-    return db_ajudante
-
-    # DELETAR
-@app.delete("/ajudantes/{ajudante_id}", response_model=schemas.AjudanteResponse)
-def deletar_ajudante(ajudante_id: int, db: Session = Depends(get_db)):
-    db_ajudante = crud.delete_ajudante(db=db, ajudante_id=ajudante_id)
-
-    if db_ajudante is None:
-        raise HTTPException(status_code=404, detail="Ajudante não encontrado")
-    return db_ajudante
 
 # MÉTODOS - VEÍCULOS
 

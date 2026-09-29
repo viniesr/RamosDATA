@@ -2,8 +2,8 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
 
-class Motorista(Base):
-    __tablename__ = "motoristas"
+class Funcionario(Base):
+    __tablename__ = "funcionarios"
 
     id = Column(Integer, primary_key = True, index = True, autoincrement = True)
     nome = Column(String, nullable=False)
@@ -16,14 +16,6 @@ class Vendedor(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nome = Column(String, nullable=False)
     loja = Column(String, nullable=True)
-    status = Column(String, default="Ativo", nullable=False)
-
-class Ajudante(Base):
-    __tablename__ = "ajudantes"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    nome = Column(String, nullable=False)
-    cpf = Column(String, nullable=True)
     status = Column(String, default="Ativo", nullable=False)
 
 class Veiculo(Base):
@@ -69,8 +61,10 @@ class Entrega(Base):
     destino = Column(String, nullable=True)
     uf = Column(String, nullable=True)
     veiculo_id = Column(Integer, ForeignKey("veiculos.id"), nullable=True)
-    motorista_id = Column(Integer, ForeignKey("motoristas.id"), nullable=True)
-    ajudante_id = Column(Integer, ForeignKey("ajudantes.id"), nullable=True)
+    motorista_id = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
+    ajudante1_id = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
+    ajudante2_id = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
+    ajudante3_id = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
     vendedor_id = Column(Integer, ForeignKey("vendedores.id"), nullable=True)
     valor = Column(Float, nullable=True)
     peso = Column(Float, nullable=True)
@@ -80,6 +74,8 @@ class Entrega(Base):
     ciclo = relationship("Ciclo")
     pacote = relationship("Pacote")
     veiculo = relationship("Veiculo")
-    motorista = relationship("Motorista")
-    ajudante = relationship("Ajudante")
+    motorista = relationship("Funcionario", foreign_keys=[motorista_id])
+    ajudante1 = relationship("Funcionario", foreign_keys=[ajudante1_id])
+    ajudante2 = relationship("Funcionario", foreign_keys=[ajudante2_id])
+    ajudante3 = relationship("Funcionario", foreign_keys=[ajudante3_id])
     vendedor = relationship("Vendedor")

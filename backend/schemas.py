@@ -1,15 +1,15 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class MotoristaBase(BaseModel):
+class FuncionarioBase(BaseModel):
     nome: str
     cpf: Optional[str] = None
     status: str = "Ativo"
 
-class MotoristaCreate(MotoristaBase):
+class FuncionarioCreate(FuncionarioBase):
     pass
 
-class MotoristaResponse(MotoristaBase):
+class FuncionarioResponse(FuncionarioBase):
     id: int
 
     class Config:
@@ -24,20 +24,6 @@ class VendedorCreate(VendedorBase):
     pass
 
 class VendedorResponse(VendedorBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-class AjudanteBase(BaseModel):
-    nome: str
-    cpf: Optional[str] = None
-    status: str = "Ativo"
-
-class AjudanteCreate(AjudanteBase):
-    pass
-
-class AjudanteResponse(AjudanteBase):
     id: int
 
     class Config:
@@ -100,7 +86,9 @@ class EntregaBase(BaseModel):
     uf: Optional[str] = None
     veiculo_id: Optional[int] = None
     motorista_id: Optional[int] = None
-    ajudante_id: Optional[int] = None
+    ajudante1_id: Optional[int] = None
+    ajudante2_id: Optional[int] = None
+    ajudante3_id: Optional[int] = None
     vendedor_id: Optional[int] = None
     valor: Optional[float] = None
     peso: Optional[float] = None

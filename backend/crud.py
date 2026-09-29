@@ -2,48 +2,48 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 
-def create_motorista(db: Session, motorista: schemas.MotoristaCreate):
-    db_motorista = models.Motorista(
-        nome=motorista.nome,
-        cpf= motorista.cpf,
-        status= motorista.status
+def create_funcionario(db: Session, funcionario: schemas.FuncionarioCreate):
+    db_funcionario = models.Funcionario(
+        nome=funcionario.nome,
+        cpf= funcionario.cpf,
+        status= funcionario.status
     )
 
-    db.add(db_motorista)
+    db.add(db_funcionario)
     db.commit()
-    db.refresh(db_motorista)
-    return db_motorista
+    db.refresh(db_funcionario)
+    return db_funcionario
 
-def get_motoristas(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Motorista).offset(skip).limit(limit).all()
+def get_funcionarios(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Funcionario).offset(skip).limit(limit).all()
 
-def get_motorista_by_id(db: Session, motorista_id: int):
-    return db.query(models.Motorista).filter(models.Motorista.id == motorista_id).first()
+def get_funcionario_by_id(db: Session, funcionario_id: int):
+    return db.query(models.Funcionario).filter(models.Funcionario.id == funcionario_id).first()
 
-def update_motorista(db: Session, motorista_id: int, updating_motorista: schemas.MotoristaCreate):
+def update_funcionario(db: Session, funcionario_id: int, updating_funcionario: schemas.FuncionarioCreate):
 
-    db_motorista = get_motorista_by_id(db, motorista_id)
+    db_funcionario = get_funcionario_by_id(db, funcionario_id)
 
-    if not db_motorista:
+    if not db_funcionario:
         return None
 
-    db_motorista.nome = updating_motorista.nome
-    db_motorista.cpf = updating_motorista.cpf
-    db_motorista.status = updating_motorista.status
+    db_funcionario.nome = updating_funcionario.nome
+    db_funcionario.cpf = updating_funcionario.cpf
+    db_funcionario.status = updating_funcionario.status
 
     db.commit()
-    db.refresh(db_motorista)
-    return db_motorista
+    db.refresh(db_funcionario)
+    return db_funcionario
 
-def delete_motorista(db: Session, motorista_id: int):
-    db_motorista = get_motorista_by_id(db,motorista_id)
+def delete_funcionario(db: Session, funcionario_id: int):
+    db_funcionario = get_funcionario_by_id(db,funcionario_id)
 
-    if not db_motorista:
+    if not db_funcionario:
         return None
 
-    db.delete(db_motorista)
+    db.delete(db_funcionario)
     db.commit()
-    return db_motorista
+    return db_funcionario
 
 def create_vendedor(db: Session, vendedor: schemas.VendedorCreate):
     db_vendedor = models.Vendedor(
@@ -86,48 +86,6 @@ def delete_vendedor(db:Session, vendedor_id: int):
     db.delete(db_vendedor)
     db.commit()
     return db_vendedor
-
-def create_ajudante(db: Session, ajudante: schemas.AjudanteCreate):
-    db_ajudante = models.Ajudante(
-        nome=ajudante.nome,
-        cpf=ajudante.cpf,
-        status=ajudante.status
-    )
-
-    db.add(db_ajudante)
-    db.commit()
-    db.refresh(db_ajudante)
-    return db_ajudante
-
-def get_ajudantes(db: Session, skip: int=0, limit: int=100):
-    return db.query(models.Ajudante).offset(skip).limit(limit).all()
-
-def get_ajudante_by_id(db:Session, ajudante_id: int):
-    return db.query(models.Ajudante).filter(models.Ajudante.id == ajudante_id).first()
-
-def update_ajudante(db:Session, ajudante_id: int, updating_ajudante: schemas.AjudanteCreate):
-    db_ajudante = get_ajudante_by_id(db, ajudante_id)
-
-    if not db_ajudante:
-        return None
-
-    db_ajudante.nome = updating_ajudante.nome
-    db_ajudante.cpf = updating_ajudante.cpf
-    db_ajudante.status = updating_ajudante.status
-
-    db.commit()
-    db.refresh(db_ajudante)
-    return db_ajudante
-
-def delete_ajudante(db:Session, ajudante_id: int):
-    db_ajudante = get_ajudante_by_id(db,ajudante_id)
-
-    if not db_ajudante:
-        return None
-
-    db.delete(db_ajudante)
-    db.commit()
-    return db_ajudante
 
 def create_veiculo(db: Session, veiculo: schemas.VeiculoCreate):
     db_veiculo = models.Veiculo(
@@ -277,7 +235,9 @@ def create_entrega(db:Session, entrega: schemas.EntregaCreate):
         uf=entrega.uf,
         veiculo_id=entrega.veiculo_id,
         motorista_id=entrega.motorista_id,
-        ajudante_id=entrega.ajudante_id,
+        ajudante1_id=entrega.ajudante1_id,
+        ajudante2_id=entrega.ajudante2_id,
+        ajudante3_id=entrega.ajudante3_id,
         vendedor_id=entrega.vendedor_id,
         valor=entrega.valor,
         peso=entrega.peso,
@@ -310,7 +270,9 @@ def update_entrega(db:Session, entrega_id: int, updating_entrega: schemas.Entreg
     db_entrega.uf = updating_entrega.uf
     db_entrega.veiculo_id = updating_entrega.veiculo_id
     db_entrega.motorista_id = updating_entrega.motorista_id
-    db_entrega.ajudante_id = updating_entrega.ajudante_id
+    db_entrega.ajudante1_id = updating_entrega.ajudante1_id
+    db_entrega.ajudante2_id = updating_entrega.ajudante2_id
+    db_entrega.ajudante3_id = updating_entrega.ajudante3_id
     db_entrega.vendedor_id = updating_entrega.vendedor_id
     db_entrega.valor = updating_entrega.valor
     db_entrega.peso = updating_entrega.peso
