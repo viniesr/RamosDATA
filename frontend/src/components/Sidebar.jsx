@@ -33,6 +33,13 @@ function Sidebar({ navegarPara }) {
           <li><button onClick={() => navegarPara('listarFuncionario')}>Listar Funcionário</button></li>
           <li><button onClick={() => navegarPara('proventos')}>Proventos</button></li>
         </ul>
+
+        {/* MÓDULO COMERCIAL */}
+        <h4>Comercial</h4>
+        <ul>
+          <li><button onClick={() => navegarPara('cadastrarVendedor')}>Cadastrar Vendedor</button></li>
+          <li><button onClick={() => navegarPara('listarVendedor')}>Listar Vendedor</button></li>
+        </ul>
       </nav>
     </aside>
   )
