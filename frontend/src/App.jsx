@@ -3,6 +3,7 @@ import CadastrarFuncionario from './pages/CadastrarFuncionario'
 import ListarVendedores from './pages/ListarVendedores'
 import CadastrarVendedor from './pages/CadastrarVendedor'
 import Sidebar from './components/Sidebar'
+import Veiculos from './pages/Veiculos'
 import { useState } from 'react'
 
 function App() {
@@ -45,6 +46,10 @@ function App() {
 
     if (telaAtual === 'cadastrarVendedor') {
       return <CadastrarVendedor navegarPara={navegarPara} vendedorEditando={vendedorEditando} />
+    }
+    
+    if (telaAtual === 'veiculos'){
+      return <Veiculos/>
     }
 
     return (

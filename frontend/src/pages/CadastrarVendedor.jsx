@@ -21,7 +21,7 @@ function salvarVendedor(evento){
     const pacote = {nome: nome, loja: loja, status: status}
 
     if (idEditando !== null){
-        fetch('http://127.0.0.1:8000/vendedores' + idEditando, {
+        fetch('http://127.0.0.1:8000/vendedores/' + idEditando, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(pacote)
@@ -29,7 +29,7 @@ function salvarVendedor(evento){
             navegarPara('listarVendedor')
         })
     } else {
-        fetch('http://127.0.0.1:8000/vendedores', {
+        fetch('http://127.0.0.1:8000/vendedores/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(pacote)
