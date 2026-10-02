@@ -57,6 +57,15 @@ function Veiculos(){
         }
     }
 
+    function deletarVeiculo() {
+        const confirmou = window.confirm(`Deseja apagar permanentemente o veículo de placa ${placa}?`)
+        if (confirmou) {
+            fetch('http://127.0.0.1:8000/veiculos/' + idEditando, {
+                method: 'DELETE'
+            }).then(() => setTelaInterna('lista'))
+        }
+    }
+
     return (
         <div>
             {telaInterna === 'lista' ? (
@@ -94,7 +103,7 @@ function Veiculos(){
                 <div>
                     <input
                         type="text"
-                        placeholder="Placa (Ex: ABC-1234 | ABC-1D23)"
+                        placeholder="Placa (Ex: ABC-1234)"
                         value={placa}
                         onChange={(evento) => setPlaca(evento.target.value)}
                         required
@@ -136,6 +145,10 @@ function Veiculos(){
                     <button type="submit">
                         {idEditando ? 'Salvar Alterações' : 'Cadastrar'}
                     </button>
+
+                    {idEditando !== null && (
+                        <button type="button" onClick={deletarVeiculo}>Excluir Veículo</button>
+                    )}
 
                     <button type="button" onClick={() => setTelaInterna('lista')}>Cancelar</button>
                 </div>
