@@ -29,16 +29,14 @@ function Sidebar({ navegarPara }) {
         {/* MÓDULO FUNCIONÁRIOS */}
         <h4>Funcionários</h4>
         <ul>
-          <li><button onClick={() => navegarPara('cadastrarFuncionario')}>Cadastrar Funcionário</button></li>
-          <li><button onClick={() => navegarPara('listarFuncionario')}>Listar Funcionário</button></li>
+          <li><button onClick={() => navegarPara('funcionarios')}>Funcionários</button></li>
           <li><button onClick={() => navegarPara('proventos')}>Proventos</button></li>
         </ul>
 
         {/* MÓDULO COMERCIAL */}
         <h4>Comercial</h4>
         <ul>
-          <li><button onClick={() => navegarPara('cadastrarVendedor')}>Cadastrar Vendedor</button></li>
-          <li><button onClick={() => navegarPara('listarVendedor')}>Listar Vendedor</button></li>
+          <li><button onClick={() => navegarPara('vendedores')}>Vendedores</button></li>
         </ul>
       </nav>
     </aside>
