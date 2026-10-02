@@ -4,27 +4,13 @@ import CadastrarFuncionario from './pages/CadastrarFuncionario';
 import Sidebar from './components/Sidebar';
 import Veiculos from './pages/Veiculos';
 import Vendedores from './pages/Vendedores';
+import Funcionarios from './pages/Funcionarios';
 
 
 function App() {
-  const [telaAtual, setTelaAtual] = useState('listarFuncionario')
+  const [telaAtual, setTelaAtual] = useState('funcionarios')
   
-  // Nova gaveta: guarda os dados do funcionário quando clicamos em "Editar"
-  const [funcionarioEditando, setFuncionarioEditando] = useState(null)
-
-
-  // Função ÚNICA para navegar e gerenciar as gavetas de edição
-  function navegarPara(novaTela, dados = null) {
-    if (novaTela === 'cadastrarFuncionario') {
-      setFuncionarioEditando(dados)
-  
-    } else if (novaTela === 'cadastrarVendedor') {
-      setFuncionarioEditando(null) // Limpa o funcionário pra não misturar
-    } else {
-      // Quando for pra uma tela de lista (ou qualquer outra), limpa as duas gavetas
-      setFuncionarioEditando(null)
-    }
-
+  function navegarPara(novaTela) {
     setTelaAtual(novaTela)
   }
 
@@ -43,6 +29,10 @@ function App() {
 
     if (telaAtual == 'vendedores'){
       return <Vendedores/>
+    }
+
+    if (telaAtual == 'funcionarios'){
+      return <Funcionarios/>
     }
 
     return (
