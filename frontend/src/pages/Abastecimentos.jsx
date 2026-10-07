@@ -17,6 +17,18 @@ function Abastecimentos() {
     const [litros, setLitros] = useState('')
     const [idEditando, setIdEditando] = useState(null)
 
+    useEffect(() => {
+        // Puxa a lista de veículos cadastrados no backend
+        fetch('http://127.0.0.1:8000/veiculos/')
+            .then((resposta) => resposta.json())
+            .then((dados) => setVeiculos(dados))
+
+        // Puxa a lista de abastecimentos cadastrados no backend
+        fetch('http://127.0.0.1:8000/abastecimentos/')
+            .then((resposta) => resposta.json())
+            .then((dados) => setAbastecimentos(dados))
+    }, [telaInterna])
+
     function FormularioNovoAbastecimento(){
         setVeiculoId('')
         setData(new Date().toISOString().split('T')[0])
@@ -58,7 +70,7 @@ function Abastecimentos() {
                 body: JSON.stringify(pacote)
             }) .then(() => setTelaInterna('lista'))
         } else {
-            fetch('http:127.0.0.1:8000/abastecimentos/', {
+            fetch('http://127.0.0.1:8000/abastecimentos/', {
                 method: 'POST',
                 headers: {'Content-Type' : 'application/json'},
                 body: JSON.stringify(pacote)
@@ -66,7 +78,7 @@ function Abastecimentos() {
         }
     }
 
-function deletarAbastecimento() {
+    function deletarAbastecimento() {
         const confirmou = window.confirm("Tem certeza que deseja apagar este registro de abastecimento?")
         if (confirmou && idEditando !== null) {
             fetch('http://127.0.0.1:8000/abastecimentos/' + idEditando, {
@@ -75,9 +87,144 @@ function deletarAbastecimento() {
         }
     }
 
+    function obterNomeVeiculo(id) {
+        const veiculo = veiculos.find((v) => v.id === id)
+        return veiculo ? `${veiculo.modelo} (${veiculo.placa || 'Sem placa'})` : `Veículo #${id}`
+    }
+
     return (
         <div>
-            <h2>Módulo de Abastecimentos</h2>
+            {telaInterna === 'lista' ? (
+                <div>
+                    <h2>Lista de Abastecimentos</h2>
+                    <button onClick={FormularioNovoAbastecimento}>+ Registrar Abastecimento</button>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Km</th>
+                                <th>Data</th>
+                                <th>Combustível</th>
+                                <th>Valor</th>
+                                <th>Litros</th>
+                                <th>R$ / L</th> {/* <- Nova Coluna */}
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {abastecimentos.map((item) => (
+                                <tr key={item.id}>
+                                    <td>{obterNomeVeiculo(item.veiculo_id)}</td>
+                                    <td>{item.km !== null ? item.km : '-'}</td>
+                                    <td>{item.data}</td>
+                                    <td>{item.tipo_combustivel}</td>
+                                    <td>{item.valor !== null ? `R$ ${item.valor}` : '-'}</td>
+                                    <td>{item.litros !== null ? `${item.litros} L` : '-'}</td>
+                                    
+                                    {/* Calcula e mostra o preço por litro */}
+                                    <td>
+                                        {item.valor && item.litros ? `R$ ${(item.valor / item.litros).toFixed(2)}` : '-'}
+                                    </td>
+
+                                    <td>
+                                        <button onClick={() => FormularioEditarAbastecimento(item)}>Editar</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+            ) : (
+                <div>
+                    <h2>{idEditando ? 'Editando Abastecimento' : 'Novo Abastecimento'}</h2>
+
+                    <form onSubmit={salvarAbastecimento}>
+
+                        <div>
+                            <label>Veículo: </label>
+                            <select value={veiculoId} onChange={(evento) => setVeiculoId(evento.target.value)} required>
+                                <option value="">-- Selecione o Veículo --</option>
+                                {veiculos.map((veiculo) => (
+                                    <option key={veiculo.id} value={veiculo.id}>
+                                        {veiculo.modelo} - {veiculo.placa || 'Sem Placa'}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label>Data: </label>
+                            <input
+                                type="date"
+                                value={data}
+                                onChange={(evento) => setData(evento.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label>KM Atual: </label>
+                            <input
+                                type="number"
+                                placeholder="Ex: 365512"
+                                value={km}
+                                onChange={(evento) => setKm(evento.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label>Combustível: </label>
+                            <select 
+                                value={tipoCombustivel} 
+                                onChange={(evento) => setTipoCombustivel(evento.target.value)}
+                                required
+                            >
+                                <option value="">-- Selecione o Combustível --</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Gasolina">Gasolina</option>
+                                <option value="Etanol">Etanol</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label>Valor Total (R$): </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Ex: 150.00"
+                                value={valor}
+                                onChange={(evento) => setValor(evento.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label>Litros: </label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="Ex: 25.5"
+                                value={litros}
+                                onChange={(evento) => setLitros(evento.target.value)}
+                            />
+                        </div>
+
+                        {/* Os próximos campos vão entrar aqui */}
+
+                        <br />
+                        <button type="submit">{idEditando ? 'Salvar Alterações' : 'Cadastrar'}</button>
+                        
+                        {idEditando !== null && (
+                            <button type="button" onClick={deletarAbastecimento}>Excluir Registro</button>
+                        )}
+
+                        <button type="button" onClick={() => setTelaInterna('lista')}>Cancelar</button>
+
+                    </form>
+                </div>
+            )}
         </div>
     )
 }
