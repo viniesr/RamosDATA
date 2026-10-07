@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import ListarFuncionarios from './pages/ListarFuncionarios';
-import CadastrarFuncionario from './pages/CadastrarFuncionario';
 import Sidebar from './components/Sidebar';
 import Veiculos from './pages/Veiculos';
 import Vendedores from './pages/Vendedores';
