@@ -79,3 +79,17 @@ class Entrega(Base):
     ajudante2 = relationship("Funcionario", foreign_keys=[ajudante2_id])
     ajudante3 = relationship("Funcionario", foreign_keys=[ajudante3_id])
     vendedor = relationship("Vendedor")
+
+
+class Abastecimento(Base):
+    __tablename__ = "abastecimentos"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    veiculo_id = Column(Integer, ForeignKey("veiculos.id"), nullable=False)
+    data = Column(String, nullable=True)
+    km = Column(Float, nullable=True)
+    tipo_combustivel = Column(String, nullable=True)
+    valor = Column(Float, nullable=True)
+    litros = Column(Float, nullable=True)
+    
+    veiculo = relationship("Veiculo")

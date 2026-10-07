@@ -292,3 +292,38 @@ def delete_entrega(db: Session, entrega_id: int):
     db.delete(db_entrega)
     db.commit()
     return db_entrega
+
+def get_abastecimentos(db:Session):
+    return db.query(models.Abastecimento).all()
+
+def create_abastecimento(db: Session, abastecimento: schemas.AbastecimentoCreate):
+    db_abastecimento = models.Abastecimento(**abastecimento.model_dump())
+    db.add(db_abastecimento)
+    db.commit()
+    db.refresh(db_abastecimento)
+    return db_abastecimento
+
+def update_abastecimento(db: Session, abastecimento_id: int, updating_abastecimento: schemas.AbastecimentoCreate):
+    db_abastecimento = db.query(models.Abastecimento).filter(models.Abastecimento.id == abastecimento_id).first()
+
+    if not db_abastecimento:
+        return None
+
+    db_abastecimento.veiculo_id = updating_abastecimento.veiculo_id
+    db_abastecimento.data = updating_abastecimento.data
+    db_abastecimento.km = updating_abastecimento.km
+    db_abastecimento.tipo_combustivel = updating_abastecimento.tipo_combustivel
+    db_abastecimento.valor = updating_abastecimento.valor
+    db_abastecimento.litros = updating_abastecimento.litros
+
+    db.commit()
+    db.refresh(db_abastecimento)
+    return db_abastecimento
+
+def delete_abastecimento(db: Session, abastecimento_id: int):
+    db_abastecimento = db.query(models.Abastecimento).filter(models.Abastecimento.id == abastecimento_id).first()
+    if db_abastecimento:
+        db.delete(db_abastecimento)
+        db.commit()
+        return True
+    return False

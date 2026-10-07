@@ -103,3 +103,20 @@ class EntregaResponse(EntregaBase):
 
     class Config:
         from_attributes = True
+
+class AbastecimentoBase(BaseModel):
+    veiculo_id: Optional[int]
+    data: str
+    km: Optional[float] = None
+    tipo_combustivel: Optional[str] = None
+    valor: Optional[float] = None
+    litros: Optional[float] = None
+
+class AbastecimentoCreate(AbastecimentoBase):
+    pass
+
+class AbastecimentoResponse(AbastecimentoBase):
+    id: int
+
+    class Config:
+        from_attributes = True
