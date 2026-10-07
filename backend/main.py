@@ -262,3 +262,33 @@ def deletar_entregas(entrega_id: int, db: Session = Depends(get_db)):
     if db_entrega is None:
         raise HTTPException(status_code=404, detail="Entrega não encontrada")
     return db_entrega
+
+# MÉTODOS - ABASTECIMENTOS
+
+    # CRIAR
+@app.post("/abastecimentos/", response_model=schemas.AbastecimentoResponse)
+def criar_abastecimento(abastecimento: schemas.AbastecimentoCreate, db: Session = Depends(get_db)):
+    return crud.create_abastecimento(db=db, abastecimento=abastecimento)
+
+    # LISTAR
+@app.get("/abastecimentos/", response_model=List[schemas.AbastecimentoResponse])
+def listar_abastecimentos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_abastecimentos(db=db)
+
+    # ATUALIZAR
+@app.put("/abastecimentos/{abastecimento_id}", response_model=schemas.AbastecimentoResponse)
+def atualizar_abastecimento(abastecimento_id: int, updating_abastecimento: schemas.AbastecimentoCreate, db: Session = Depends(get_db)):
+    db_abastecimento = crud.update_abastecimento(db=db, abastecimento_id=abastecimento_id, updating_abastecimento=updating_abastecimento)
+
+    if db_abastecimento is None:
+        raise HTTPException(status_code=404, detail="Abastecimento não encontrado")
+    return db_abastecimento
+
+    # DELETAR
+@app.delete("/abastecimentos/{abastecimento_id}")
+def deletar_abastecimento(abastecimento_id: int, db: Session = Depends(get_db)):
+    sucesso = crud.delete_abastecimento(db=db, abastecimento_id=abastecimento_id)
+
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Abastecimento não encontrado")
+    return {"message": "Abastecimento deletado com sucesso"}
