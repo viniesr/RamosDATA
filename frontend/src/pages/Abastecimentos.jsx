@@ -88,8 +88,8 @@ function Abastecimentos() {
     }
 
     function obterNomeVeiculo(id) {
-        const veiculo = veiculos.find((v) => v.id === id)
-        return veiculo ? `${veiculo.modelo} (${veiculo.placa || 'Sem placa'})` : `Veículo #${id}`
+        const veiculo = veiculos.find((veiculo) => veiculo.id === id)
+        return veiculo ? veiculo.modelo : `Veículo #${id}`
     }
 
     return (
@@ -118,14 +118,28 @@ function Abastecimentos() {
                                 <tr key={item.id}>
                                     <td>{obterNomeVeiculo(item.veiculo_id)}</td>
                                     <td>{item.km !== null ? item.km : '-'}</td>
-                                    <td>{item.data}</td>
-                                    <td>{item.tipo_combustivel}</td>
-                                    <td>{item.valor !== null ? `R$ ${item.valor}` : '-'}</td>
-                                    <td>{item.litros !== null ? `${item.litros} L` : '-'}</td>
                                     
-                                    {/* Calcula e mostra o preço por litro */}
+                                    {/* Formata 'AAAA-MM-DD' para 'DD/MM/AAAA' */}
                                     <td>
-                                        {item.valor && item.litros ? `R$ ${(item.valor / item.litros).toFixed(2)}` : '-'}
+                                        {item.data ? item.data.split('-').reverse().join('/') : '-'}
+                                    </td>
+
+                                    <td>{item.tipo_combustivel}</td>
+
+                                    {/* Formata de 250 para R$ 250,00 e 91.58 para R$ 91,58 */}
+                                    <td>
+                                        {item.valor !== null 
+                                            ? `R$ ${Number(item.valor).toFixed(2).replace('.', ',')}` 
+                                            : '-'}
+                                    </td>
+
+                                    <td>{item.litros !== null ? `${item.litros} L` : '-'}</td>
+
+                                    {/* Preço por litro com 2 casas decimais e vírgula */}
+                                    <td>
+                                        {item.valor && item.litros 
+                                            ? `R$ ${(item.valor / item.litros).toFixed(2).replace('.', ',')}` 
+                                            : '-'}
                                     </td>
 
                                     <td>
