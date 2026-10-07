@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import Veiculos from './pages/Veiculos';
 import Vendedores from './pages/Vendedores';
 import Funcionarios from './pages/Funcionarios';
+import Abastecimentos from './pages/Abastecimentos';
 
 
 function App() {
@@ -31,6 +32,10 @@ function App() {
 
     if (telaAtual == 'funcionarios'){
       return <Funcionarios/>
+    }
+
+    if (telaAtual == 'abastecimentos'){
+      return <Abastecimentos/>
     }
 
     return (
