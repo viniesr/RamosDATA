@@ -271,9 +271,9 @@ def criar_abastecimento(abastecimento: schemas.AbastecimentoCreate, db: Session 
     return crud.create_abastecimento(db=db, abastecimento=abastecimento)
 
     # LISTAR
-@app.get("/abastecimentos/", response_model=List[schemas.AbastecimentoResponse])
-def listar_abastecimentos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_abastecimentos(db=db)
+@app.get("/abastecimentos/", response_model=list[schemas.AbastecimentoResponse])
+def read_abastecimentos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_abastecimentos(db, skip=skip, limit=limit)
 
     # ATUALIZAR
 @app.put("/abastecimentos/{abastecimento_id}", response_model=schemas.AbastecimentoResponse)

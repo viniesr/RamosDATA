@@ -87,9 +87,24 @@ class Abastecimento(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     veiculo_id = Column(Integer, ForeignKey("veiculos.id"), nullable=False)
     data = Column(String, nullable=True)
-    km = Column(Float, nullable=True)
+    km = Column(Integer, nullable=True)
     tipo_combustivel = Column(String, nullable=True)
     valor = Column(Float, nullable=True)
     litros = Column(Float, nullable=True)
     
+    veiculo = relationship("Veiculo")
+
+class Manutencao(Base):
+    __tablename__ = "manutencoes"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    veiculo_id = Column(Integer, ForeignKey("veiculos.id"), nullable=False)
+    data = Column(String, nullable=False)
+    tipo = Column(String, nullable=False)
+    quantidade = Column(Integer, nullable=True)
+    descricao = Column(String, nullable=False)
+    km = Column(Integer, nullable=True)
+    valor = Column(Float, nullable=True)
+    observacoes = Column(String, nullable=True)
+
     veiculo = relationship("Veiculo")

@@ -293,15 +293,15 @@ def delete_entrega(db: Session, entrega_id: int):
     db.commit()
     return db_entrega
 
-def get_abastecimentos(db:Session):
-    return db.query(models.Abastecimento).all()
-
 def create_abastecimento(db: Session, abastecimento: schemas.AbastecimentoCreate):
     db_abastecimento = models.Abastecimento(**abastecimento.model_dump())
     db.add(db_abastecimento)
     db.commit()
     db.refresh(db_abastecimento)
     return db_abastecimento
+
+def get_abastecimentos(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Abastecimento).offset(skip).limit(limit).all()
 
 def update_abastecimento(db: Session, abastecimento_id: int, updating_abastecimento: schemas.AbastecimentoCreate):
     db_abastecimento = db.query(models.Abastecimento).filter(models.Abastecimento.id == abastecimento_id).first()
@@ -327,3 +327,55 @@ def delete_abastecimento(db: Session, abastecimento_id: int):
         db.commit()
         return True
     return False
+
+def create_manutencao(db: Session, manutencao:schemas.ManutencaoCreate):
+    db_manutencao = models.Manutencao(
+        veiculo_id = manutencao.veiculo_id,
+        data = manutencao.data,
+        tipo = manutencao.tipo,
+        quantidade = manutencao.quantidade,
+        descricao = manutencao.descricao,
+        km = manutencao.km,
+        valor = manutencao.valor,
+        observacoes = manutencao.observacoes
+    )
+
+    db.add(db_manutencao)
+    db.commit()
+    db.refresh(db_manutencao)
+    return db_manutencao
+
+def get_manutencoes(db:Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Manutencao).offset(skip).limit(limit).all()
+
+def get_manutencao_by_id(db:Session, manutencao_id: int):
+    return db.query(models.Manutencao).filter(models.Manutencao.id == manutencao_id).first()
+
+def update_manutencao(db:Session, manutencao_id: int, updating_manutencao: schemas.ManutencaoCreate):
+    db_manutencao = db.query(models.Manutencao).filter(models.Manutencao.id == manutencao_id).first()
+
+    if not db_manutencao:
+        return None
+
+    db_manutencao.veiculo_id = updating_manutencao.veiculo_id
+    db_manutencao.data = updating_manutencao.data
+    db_manutencao.tipo = updating_manutencao.tipo
+    db_manutencao.quantidade = updating_manutencao.quantidade
+    db_manutencao.descricao = updating_manutencao.descricao
+    db_manutencao.km = updating_manutencao.km
+    db_manutencao.valor = updating_manutencao.valor
+    db_manutencao.observacoes = updating_manutencao.observacoes
+
+    db.commit()
+    db.refresh(db_manutencao)
+    return db_manutencao
+
+def delete_manutencao(db: Session, manutencao_id: int):
+    db_manutencao = get_manutencao_by_id(db, manutencao_id)
+
+    if not db_manutencao:
+        return None
+
+    db.delete(db_manutencao)
+    db.commit()
+    return db_manutencao

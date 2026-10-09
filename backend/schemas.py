@@ -105,9 +105,9 @@ class EntregaResponse(EntregaBase):
         from_attributes = True
 
 class AbastecimentoBase(BaseModel):
-    veiculo_id: Optional[int]
+    veiculo_id: int
     data: str
-    km: Optional[float] = None
+    km: Optional[int] = None
     tipo_combustivel: Optional[str] = None
     valor: Optional[float] = None
     litros: Optional[float] = None
@@ -116,6 +116,25 @@ class AbastecimentoCreate(AbastecimentoBase):
     pass
 
 class AbastecimentoResponse(AbastecimentoBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+class ManutencaoBase(BaseModel):
+    veiculo_id: int
+    data: str
+    tipo: str
+    quantidade: Optional[int] = None
+    descricao: str
+    km: Optional[int] = None
+    valor: Optional[float] = None
+    observacoes: Optional[str] = None
+
+class ManutencaoCreate(ManutencaoBase):
+    pass
+
+class ManutencaoResponse(ManutencaoBase):
     id: int
 
     class Config:
