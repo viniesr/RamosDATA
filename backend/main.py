@@ -271,9 +271,9 @@ def criar_abastecimento(abastecimento: schemas.AbastecimentoCreate, db: Session 
     return crud.create_abastecimento(db=db, abastecimento=abastecimento)
 
     # LISTAR
-@app.get("/abastecimentos/", response_model=list[schemas.AbastecimentoResponse])
-def read_abastecimentos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_abastecimentos(db, skip=skip, limit=limit)
+@app.get("/abastecimentos/", response_model=List[schemas.AbastecimentoResponse])
+def listar_abastecimentos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_abastecimentos(db=db, skip=skip, limit=limit)
 
     # ATUALIZAR
 @app.put("/abastecimentos/{abastecimento_id}", response_model=schemas.AbastecimentoResponse)
@@ -292,3 +292,32 @@ def deletar_abastecimento(abastecimento_id: int, db: Session = Depends(get_db)):
     if not sucesso:
         raise HTTPException(status_code=404, detail="Abastecimento não encontrado")
     return {"message": "Abastecimento deletado com sucesso"}
+
+# MÉTODOS - MANUTENÇÕES
+
+    # CRIAR
+@app.post("/manutencoes/", response_model=schemas.ManutencaoResponse)
+def criar_manutencao(manutencao: schemas.ManutencaoCreate, db: Session = Depends(get_db)):
+    return crud.create_manutencao(db=db, manutencao=manutencao)
+    # LISTAR
+@app.get("/manutencoes/", response_model=List[schemas.ManutencaoResponse])
+def listar_manutencao(skip: int = 0, limit: int = 100, db:Session = Depends(get_db)):
+    return crud.get_manutencoes(db=db, skip=skip, limit=limit)
+
+    # ATUALIZAR
+@app.put("/manutencoes/{manutencao_id}", response_model=schemas.ManutencaoResponse)
+def atualizar_manutencao(manutencao_id: int, updating_manutencao: schemas.ManutencaoCreate, db:Session = Depends(get_db)):
+    db_manutencao = crud.update_manutencao(db=db, manutencao_id = manutencao_id, updating_manutencao= updating_manutencao)
+
+    if db_manutencao is None:
+        raise HTTPException(status_code=404, detail="Manutenção não encontrada")
+    return db_manutencao
+
+    # DELETAR
+@app.delete("/manutencoes/{manutencao_id}")
+def deletar_manutencao(manutencao_id: int, db:Session=Depends(get_db)):
+    db_manutencao = crud.delete_manutencao(db=db, manutencao_id=manutencao_id)
+
+    if not db_manutencao:
+        raise HTTPException(status_code=404, detail="Manutenção não encontrada")
+    return db_manutencao
