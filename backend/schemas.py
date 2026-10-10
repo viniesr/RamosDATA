@@ -130,6 +130,7 @@ class ManutencaoBase(BaseModel):
     km: Optional[int] = None
     valor: Optional[float] = None
     observacoes: Optional[str] = None
+    comprovante: Optional[str] = None
 
 class ManutencaoCreate(ManutencaoBase):
     pass

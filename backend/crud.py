@@ -337,7 +337,8 @@ def create_manutencao(db: Session, manutencao:schemas.ManutencaoCreate):
         descricao = manutencao.descricao,
         km = manutencao.km,
         valor = manutencao.valor,
-        observacoes = manutencao.observacoes
+        observacoes = manutencao.observacoes,
+        comprovante = manutencao.comprovante
     )
 
     db.add(db_manutencao)
@@ -365,6 +366,7 @@ def update_manutencao(db:Session, manutencao_id: int, updating_manutencao: schem
     db_manutencao.km = updating_manutencao.km
     db_manutencao.valor = updating_manutencao.valor
     db_manutencao.observacoes = updating_manutencao.observacoes
+    db_manutencao.comprovante = updating_manutencao.comprovante
 
     db.commit()
     db.refresh(db_manutencao)

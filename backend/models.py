@@ -106,5 +106,6 @@ class Manutencao(Base):
     km = Column(Integer, nullable=True)
     valor = Column(Float, nullable=True)
     observacoes = Column(String, nullable=True)
+    comprovante = Column(String, nullable=True)
 
     veiculo = relationship("Veiculo")
