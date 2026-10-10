@@ -20,7 +20,7 @@ function App() {
     
     if (telaAtual === 'cadastrarFuncionario') {
       return <CadastrarFuncionario navegarPara={navegarPara} funcionarioEditando={funcionarioEditando} />
-    }
+    } 
     
     if (telaAtual === 'veiculos'){
       return <Veiculos/>

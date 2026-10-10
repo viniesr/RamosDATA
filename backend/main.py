@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
+from fastapi.staticfiles import StaticFiles
 
+import os
 import crud
 import schemas
 import models
@@ -12,6 +14,12 @@ from database import SessionLocal,engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ramosDATA", description="Sistema de Gestão Logística - Ramos Transportes")
+
+# CRIAR PASTA DE UPLOADS CASO NÃO EXISTA
+os.makedirs("uploads", exist_ok=True)
+
+# SERVIR FICHEIROS ESTÁTICOS (Permite abrir os PDFs/fotos no navegador)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -321,3 +329,15 @@ def deletar_manutencao(manutencao_id: int, db:Session=Depends(get_db)):
     if not db_manutencao:
         raise HTTPException(status_code=404, detail="Manutenção não encontrada")
     return db_manutencao
+
+    # UPLOAD
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    # Caminho onde o arquivo será salvo
+    file_path = os.path.join("uploads", file.filename)
+    
+    # Salva o arquivo no disco
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+        
+    return {"url": f"uploads/{file.filename}"}
