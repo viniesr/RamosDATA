@@ -109,3 +109,18 @@ class Manutencao(Base):
     comprovante = Column(String, nullable=True)
 
     veiculo = relationship("Veiculo")
+
+class Infracao(Base):
+    __tablename__ = "infracoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    veiculo_id = Column(Integer, ForeignKey("veiculos.id"), nullable=False)
+    funcionario_id = Column(Integer, ForeignKey("funcionarios.id"), nullable=True)
+    infracao = Column(String, nullable=False)  
+    pts = Column(Integer, nullable=True)       
+    data = Column(String, nullable=False)     
+    hora = Column(String, nullable=True)       
+    local = Column(String, nullable=True)       
+    valor = Column(Float, nullable=True)       
+    status = Column(String, default="pendente") 
+    transferida = Column(String, default="não")

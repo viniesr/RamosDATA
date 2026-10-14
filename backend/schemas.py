@@ -140,3 +140,24 @@ class ManutencaoResponse(ManutencaoBase):
 
     class Config:
         from_attributes = True
+
+class InfracaoBase(BaseModel):
+    veiculo_id: int
+    funcionario_id: Optional[int] = None
+    infracao: str
+    pts: Optional[int] = None
+    data: str
+    hora: Optional[str] = None
+    local: Optional[str] = None
+    valor: Optional[float] = None
+    status: Optional[str] = "pendente"
+    transferida: Optional[str] = "não"
+
+class InfracaoCreate(InfracaoBase):
+    pass
+
+class InfracaoResponse(InfracaoBase):
+    id: int
+
+    class Config:
+        from_attributes = True

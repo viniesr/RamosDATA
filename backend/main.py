@@ -341,3 +341,29 @@ async def upload_file(file: UploadFile = File(...)):
         buffer.write(await file.read())
         
     return {"url": f"uploads/{file.filename}"}
+
+# 1. CADASTRAR INFRAÇÃO
+@app.post("/infracoes/", response_model=schemas.InfracaoResponse)
+def criar_infracao(infracao: schemas.InfracaoCreate, db: Session = Depends(get_db)):
+    return crud.create_infracao(db=db, infracao=infracao)
+
+# 2. LISTAR INFRAÇÕES
+@app.get("/infracoes/", response_model=list[schemas.InfracaoResponse])
+def listar_infracoes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_infracoes(db, skip=skip, limit=limit)
+
+# 3. ATUALIZAR INFRAÇÃO
+@app.put("/infracoes/{infracao_id}", response_model=schemas.InfracaoResponse)
+def atualizar_infracao(infracao_id: int, dados: schemas.InfracaoCreate, db: Session = Depends(get_db)):
+    infracao_atualizada = crud.update_infracao(db=db, infracao_id=infracao_id, updating_infracao=dados)
+    if not infracao_atualizada:
+        raise HTTPException(status_code=404, detail="Infração não encontrada")
+    return infracao_atualizada
+
+# 4. DELETAR INFRAÇÃO
+@app.delete("/infracoes/{infracao_id}")
+def deletar_infracao(infracao_id: int, db: Session = Depends(get_db)):
+    infracao_deletada = crud.delete_infracao(db=db, infracao_id=infracao_id)
+    if not infracao_deletada:
+        raise HTTPException(status_code=404, detail="Infração não encontrada")
+    return {"mensagem": "Infração removida com sucesso"}

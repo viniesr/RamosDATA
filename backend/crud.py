@@ -381,3 +381,39 @@ def delete_manutencao(db: Session, manutencao_id: int):
     db.delete(db_manutencao)
     db.commit()
     return db_manutencao
+
+def create_infracao(db: Session, infracao: schemas.InfracaoCreate):
+    db_infracao = models.Infracao(**infracao.model_dump())
+    db.add(db_infracao)
+    db.commit()
+    db.refresh(db_infracao)
+    return db_infracao
+
+def get_infracoes(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Infracao).offset(skip).limit(limit).all()
+
+def get_infracao_by_id(db: Session, infracao_id: int):
+    return db.query(models.Infracao).filter(models.Infracao.id == infracao_id).first()
+
+def update_infracao(db: Session, infracao_id: int, updating_infracao: schemas.InfracaoCreate):
+    db_infracao = get_infracao_by_id(db, infracao_id)
+
+    if not db_infracao:
+        return None
+
+    for chave, valor in updating_infracao.model_dump().items():
+        setattr(db_infracao, chave, valor)
+
+    db.commit()
+    db.refresh(db_infracao)
+    return db_infracao
+
+def delete_infracao(db: Session, infracao_id: int):
+    db_infracao = get_infracao_by_id(db, infracao_id)
+
+    if not db_infracao:
+        return None
+
+    db.delete(db_infracao)
+    db.commit()
+    return db_infracao
