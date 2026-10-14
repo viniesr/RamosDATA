@@ -5,6 +5,7 @@ import Vendedores from './pages/Vendedores';
 import Funcionarios from './pages/Funcionarios';
 import Abastecimentos from './pages/Abastecimentos';
 import Manutencoes from './pages/Manutencoes';
+import Infracoes from './pages/Infracoes';
 
 
 function App() {
@@ -40,6 +41,9 @@ function App() {
     }
     if (telaAtual == 'manutencoes'){
       return <Manutencoes/>
+    }
+    if(telaAtual == 'infracoes'){
+      return <Infracoes/>
     }
 
     return (
