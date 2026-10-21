@@ -124,3 +124,18 @@ class Infracao(Base):
     valor = Column(Float, nullable=True)       
     status = Column(String, default="pendente") 
     transferida = Column(String, default="não")
+
+class Provento(Base):
+    __tablename__ = "proventos"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    funcionario_id = Column(Integer, ForeignKey("funcionarios.id"), nullable=False)
+    tipo = Column(String, nullable=False)
+    data_pagamento = Column(String, nullable=False)
+    periodo = Column(String, nullable=True)
+    valor = Column(Float, nullable=False)
+    meio = Column(String, default="PIX", nullable=True)
+    comprovante = Column(String, nullable=True)
+    observacoes = Column(String, nullable=True)
+
+    funcionario = relationship("Funcionario")

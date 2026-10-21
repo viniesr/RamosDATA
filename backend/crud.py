@@ -417,3 +417,30 @@ def delete_infracao(db: Session, infracao_id: int):
     db.delete(db_infracao)
     db.commit()
     return db_infracao
+
+def create_provento(db: Session, provento: schemas.ProventoCreate):
+    db_provento = models.Provento(**provento.model_dump())
+    db.add(db_provento)
+    db.commit()
+    db.refresh(db_provento)
+    return db_provento
+
+def get_proventos(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Provento).offset(skip).limit(limit).all()
+
+def update_provento(db: Session, provento_id: int, updating_provento: schemas.ProventoCreate):
+    db_provento = db.query(models.Provento).filter(models.Provento.id == provento_id).first()
+    if db_provento:
+        for key, value in updating_provento.model_dump().items():
+            setattr(db_provento, key, value)
+        db.commit()
+        db.refresh(db_provento)
+    return db_provento
+
+def delete_provento(db: Session, provento_id: int):
+    db_provento = db.query(models.Provento).filter(models.Provento.id == provento_id).first()
+    if db_provento:
+        db.delete(db_provento)
+        db.commit()
+        return True
+    return False

@@ -367,3 +367,27 @@ def deletar_infracao(infracao_id: int, db: Session = Depends(get_db)):
     if not infracao_deletada:
         raise HTTPException(status_code=404, detail="Infração não encontrada")
     return {"mensagem": "Infração removida com sucesso"}
+
+# MÉTODOS - PROVENTOS
+
+@app.get("/proventos/", response_model=List[schemas.ProventoResponse])
+def listar_proventos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_proventos(db=db, skip=skip, limit=limit)
+
+@app.post("/proventos/", response_model=schemas.ProventoResponse)
+def criar_provento(provento: schemas.ProventoCreate, db: Session = Depends(get_db)):
+    return crud.create_provento(db=db, provento=provento)
+
+@app.put("/proventos/{provento_id}", response_model=schemas.ProventoResponse)
+def atualizar_provento(provento_id: int, dados: schemas.ProventoCreate, db: Session = Depends(get_db)):
+    provento_atualizado = crud.update_provento(db=db, provento_id=provento_id, updating_provento=dados)
+    if not provento_atualizado:
+        raise HTTPException(status_code=404, detail="Provento não encontrado")
+    return provento_atualizado
+
+@app.delete("/proventos/{provento_id}")
+def deletar_provento(provento_id: int, db: Session = Depends(get_db)):
+    sucesso = crud.delete_provento(db=db, provento_id=provento_id)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Provento não encontrado")
+    return {"mensagem": "Provento removido com sucesso"}

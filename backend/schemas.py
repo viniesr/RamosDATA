@@ -161,3 +161,18 @@ class InfracaoResponse(InfracaoBase):
 
     class Config:
         from_attributes = True
+
+class ProventoCreate(BaseModel):
+    funcionario_id: int
+    tipo: str
+    data_pagamento: str
+    periodo: Optional[str] = None
+    valor: float
+    meio: Optional[str] = "PIX"
+    comprovante: Optional[str] = None
+    observacoes: Optional[str] = None
+
+class ProventoResponse(ProventoCreate):
+    id: int
+    class Config:
+        from_attributes = True
