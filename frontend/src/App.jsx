@@ -7,6 +7,7 @@ import Abastecimentos from './pages/Abastecimentos';
 import Manutencoes from './pages/Manutencoes';
 import Infracoes from './pages/Infracoes';
 import Proventos from './pages/Proventos';
+import Romaneios from './pages/Romaneios';
 
 
 function App() {
@@ -49,6 +50,8 @@ function App() {
     if(telaAtual == 'proventos'){
       return <Proventos/>
     }
+    if(telaAtual == 'romaneios')
+      return <Romaneios/>
 
     return (
       <div>
