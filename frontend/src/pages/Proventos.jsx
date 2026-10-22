@@ -10,7 +10,11 @@ function Proventos() {
     const [funcionarioId, setFuncionarioId] = useState('')
     const [tipo, setTipo] = useState('Fechamento')
     const [dataPagamento, setDataPagamento] = useState(new Date().toISOString().split('T')[0])
-    const [periodo, setPeriodo] = useState('')
+    
+    // Período agora dividido em Data Início e Data Fim
+    const [dataInicio, setDataInicio] = useState('')
+    const [dataFim, setDataFim] = useState('')
+
     const [valor, setValor] = useState('')
     const [meio, setMeio] = useState('PIX')
     const [observacoes, setObservacoes] = useState('')
@@ -20,12 +24,10 @@ function Proventos() {
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
 
     useEffect(() => {
-        // Puxa funcionários
         fetch('http://127.0.0.1:8000/funcionarios/')
             .then((res) => res.json())
             .then((dados) => setFuncionarios(dados))
 
-        // Puxa proventos/pagamentos
         fetch('http://127.0.0.1:8000/proventos/')
             .then((res) => res.json())
             .then((dados) => setProventos(dados))
@@ -35,7 +37,8 @@ function Proventos() {
         setFuncionarioId('')
         setTipo('Fechamento')
         setDataPagamento(new Date().toISOString().split('T')[0])
-        setPeriodo('')
+        setDataInicio('')
+        setDataFim('')
         setValor('')
         setMeio('PIX')
         setObservacoes('')
@@ -49,7 +52,24 @@ function Proventos() {
         setFuncionarioId(item.funcionario_id)
         setTipo(item.tipo || 'Fechamento')
         setDataPagamento(item.data_pagamento || '')
-        setPeriodo(item.periodo || '')
+
+        // Se o período estiver salvo no formato "DD/MM/AAAA a DD/MM/AAAA", resgata para os inputs
+        if (item.periodo && item.periodo.includes(' a ')) {
+            const partes = item.periodo.split(' a ')
+            
+            // Converte DD/MM/AAAA de volta para AAAA-MM-DD para o input HTML type="date"
+            const converterParaInputDate = (dataBR) => {
+                const p = dataBR.split('/')
+                return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : ''
+            }
+
+            setDataInicio(converterParaInputDate(partes[0]))
+            setDataFim(converterParaInputDate(partes[1]))
+        } else {
+            setDataInicio('')
+            setDataFim('')
+        }
+
         setValor(item.valor ?? '')
         setMeio(item.meio || 'PIX')
         setObservacoes(item.observacoes || '')
@@ -69,7 +89,6 @@ function Proventos() {
 
         let caminhoComprovante = comprovante
 
-        // Se houver arquivo selecionado, faz o upload primeiro
         if (arquivoSelecionado) {
             const formDataEnvio = new FormData()
             formDataEnvio.append('file', arquivoSelecionado)
@@ -87,11 +106,21 @@ function Proventos() {
             }
         }
 
+        // Formata o período de AAAA-MM-DD para DD/MM/AAAA e junta as duas datas
+        let periodoFormatado = null
+        if (dataInicio && dataFim) {
+            const inicioBR = dataInicio.split('-').reverse().join('/')
+            const fimBR = dataFim.split('-').reverse().join('/')
+            periodoFormatado = `${inicioBR} a ${fimBR}`
+        } else if (dataInicio) {
+            periodoFormatado = dataInicio.split('-').reverse().join('/')
+        }
+
         const pacote = {
             funcionario_id: Number(funcionarioId),
             tipo: tipo,
             data_pagamento: dataPagamento,
-            periodo: periodo !== '' ? periodo : null,
+            periodo: periodoFormatado,
             valor: Number(valor),
             meio: meio,
             comprovante: caminhoComprovante !== '' ? caminhoComprovante : null,
@@ -139,7 +168,7 @@ function Proventos() {
                                 <th>Funcionário</th>
                                 <th>Tipo</th>
                                 <th>Data Pagamento</th>
-                                <th>Período</th>
+                                <th>Período Referente</th>
                                 <th>Meio</th>
                                 <th>Valor</th>
                                 <th>Comprovante</th>
@@ -233,13 +262,22 @@ function Proventos() {
                             />
                         </div>
 
+                        {/* DOIS SELETORES DE DATA PARA O PERÍODO */}
                         <div>
-                            <label>Período Referente: </label>
+                            <label>Período - Data Início: </label>
                             <input
-                                type="text"
-                                placeholder="Ex: Semana 2 (07/09 a 11/09)"
-                                value={periodo}
-                                onChange={(e) => setPeriodo(e.target.value)}
+                                type="date"
+                                value={dataInicio}
+                                onChange={(e) => setDataInicio(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label>Período - Data Fim: </label>
+                            <input
+                                type="date"
+                                value={dataFim}
+                                onChange={(e) => setDataFim(e.target.value)}
                             />
                         </div>
 
