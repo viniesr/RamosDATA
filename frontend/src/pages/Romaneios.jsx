@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
-// No Passo 3, vamos importar o Workspace aqui:
-// import CicloWorkspace from "./CicloWorkspace"
+import CicloWorkspace from "./CicloWorkspace"
 
 function Romaneios() {
     const [ciclos, setCiclos] = useState([])
@@ -23,15 +22,11 @@ function Romaneios() {
             <div>
                 <button 
                     onClick={() => setCicloAbertoId(null)} 
-                    style={{ marginBottom: '20px', cursor: 'pointer' }}
                 >
                     ← Voltar para a Lista de Ciclos
                 </button>
-                <h2>(O ambiente de trabalho do Ciclo #{cicloAbertoId} vai entrar aqui no Passo 3!)</h2>
-                
-                {/* No próximo passo, isto será:
-                <CicloWorkspace cicloId={cicloAbertoId} /> 
-                */}
+                <CicloWorkspace cicloId={cicloAbertoId}/>
+
             </div>
         )
     }
@@ -39,10 +34,10 @@ function Romaneios() {
     // TELA 1: LISTAGEM GERAL DE CICLOS
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div>
                 <h2>Gestão de Romaneios — Ciclos</h2>
                 {/* A lógica do modal de Novo Ciclo pode ser adicionada neste botão depois */}
-                <button style={{ padding: '10px 15px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+                <button>
                     + Novo Ciclo
                 </button>
             </div>
@@ -52,15 +47,14 @@ function Romaneios() {
                     <p>Nenhum ciclo encontrado.</p>
                 ) : (
                     ciclos.map(ciclo => (
-                        <div key={ciclo.id} style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '15px' }}>
+                        <div key={ciclo.id}>
                             {/* Correção aplicada: usando ciclo.nome conforme o schemas.py */}
-                            <h3 style={{ margin: '0 0 10px 0' }}>{ciclo.nome}</h3>
-                            <p style={{ margin: '5px 0' }}><strong>Período:</strong> {ciclo.data_inicio} até {ciclo.data_fim}</p>
-                            <p style={{ margin: '5px 0' }}><strong>Status:</strong> {ciclo.status}</p>
+                            <h3>{ciclo.nome}</h3>
+                            <p><strong>Período:</strong> {ciclo.data_inicio} até {ciclo.data_fim}</p>
+                            <p><strong>Status:</strong> {ciclo.status}</p>
                             
                             <button 
                                 onClick={() => setCicloAbertoId(ciclo.id)}
-                                style={{ marginTop: '10px', padding: '8px 12px', cursor: 'pointer' }}
                             >
                                 Abrir Workspace
                             </button>
