@@ -241,8 +241,8 @@ def criar_entrega(entrega: schemas.EntregaCreate, db: Session = Depends(get_db))
 
     # LISTAR
 @app.get("/entregas/", response_model=List[schemas.EntregaResponse])
-def listar_entregas(skip: int = 0, limit: int=100, db: Session = Depends(get_db)):
-    return crud.get_entregas(db=db, skip=skip, limit=limit)
+def listar_entregas(ciclo_id: int = None, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_entregas(db=db, ciclo_id=ciclo_id, skip=skip, limit=limit)
 
     # LISTAR(ID)
 @app.get("/entregas/{entrega_id}", response_model=schemas.EntregaResponse)

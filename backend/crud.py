@@ -250,8 +250,11 @@ def create_entrega(db:Session, entrega: schemas.EntregaCreate):
     db.refresh(db_entrega)
     return db_entrega
 
-def get_entregas(db:Session, skip: int=0, limit: int=100):
-    return db.query(models.Entrega).offset(skip).limit(limit).all()
+def get_entregas(db: Session, ciclo_id: int = None, skip: int = 0, limit: int = 100):
+    query = db.query(models.Entrega)
+    if ciclo_id is not None:
+        query = query.filter(models.Entrega.ciclo_id == ciclo_id)
+    return query.offset(skip).limit(limit).all()
 
 def get_entrega_by_id(db:Session, entrega_id: int):
     return db.query(models.Entrega).filter(models.Entrega.id == entrega_id).first()
