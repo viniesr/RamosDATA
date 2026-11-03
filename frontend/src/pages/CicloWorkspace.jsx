@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react"
 
 function CicloWorkspace({ cicloId }) {
-    // GAVETAS DE ESTADO: Dados do Ciclo
+    
     const [ciclo, setCiclo] = useState(null)
     const [entregas, setEntregas] = useState([])
-
-    // GAVETAS DE ESTADO: Listas para os campos de seleção (Dropdowns)
+    const [entregasSelecionadas, setEntregasSelecionadas] = useState([])
+    
     const [veiculos, setVeiculos] = useState([])
     const [funcionarios, setFuncionarios] = useState([])
     const [vendedores, setVendedores] = useState([])
 
-    // GAVETAS DE ESTADO: Campos do Formulário
     const [os, setOs] = useState('')
     const [dataEntrega, setDataEntrega] = useState(new Date().toISOString().split('T')[0])
     const [destino, setDestino] = useState('')
@@ -22,7 +21,6 @@ function CicloWorkspace({ cicloId }) {
     const [ajudanteIdForm, setAjudanteIdForm] = useState('')
     const [vendedorIdForm, setVendedorIdForm] = useState('')
 
-    // EFEITO 1: Carrega os dados do ciclo e as entregas sempre que o cicloId mudar
     useEffect(() => {
         fetch(`http://127.0.0.1:8000/ciclos/${cicloId}`)
             .then(resposta => resposta.json())
@@ -31,7 +29,6 @@ function CicloWorkspace({ cicloId }) {
         buscarEntregas()
     }, [cicloId])
 
-    // EFEITO 2: Carrega os veículos, funcionários e vendedores apenas uma vez quando a tela abre
     useEffect(() => {
         fetch('http://127.0.0.1:8000/veiculos/')
             .then(resposta => resposta.json())
@@ -64,7 +61,20 @@ function CicloWorkspace({ cicloId }) {
         return funcionario ? funcionario.nome : 'Desconhecido'
     }
 
-    // FUNÇÃO: Envia a nova entrega para o backend
+    function alternarSelecaoEntrega(id) {
+    if (entregasSelecionadas.includes(id)) {
+        setEntregasSelecionadas(entregasSelecionadas.filter(item => item !== id))
+    } else {
+        setEntregasSelecionadas([...entregasSelecionadas, id])
+    }
+}
+    const valorTotalSelecionado = entregas.reduce((soma, entrega) => {
+    if (entregasSelecionadas.includes(entrega.id)) {
+        return soma + (entrega.valor || 0)
+    }
+    return soma
+}, 0)
+
     function salvarLancamento(evento) {
         evento.preventDefault()
 
@@ -89,7 +99,6 @@ function CicloWorkspace({ cicloId }) {
             body: JSON.stringify(dadosDaEntrega)
         }).then(resposta => {
             if (resposta.ok) {
-                // Limpa os campos do formulário
                 setOs('')
                 setDestino('')
                 setValor('')
@@ -99,7 +108,6 @@ function CicloWorkspace({ cicloId }) {
                 setAjudanteIdForm('')
                 setVendedorIdForm('')
                 
-                // Recarrega a lista de entregas para mostrar a nova OS na tela
                 buscarEntregas()
             } else {
                 alert("Erro ao cadastrar entrega.")
@@ -108,13 +116,12 @@ function CicloWorkspace({ cicloId }) {
     }
 
     function deletarEntrega(id) {
-        // Exibe um alerta de confirmação no navegador
         if (window.confirm("Tem certeza que deseja apagar esta OS?")) {
             fetch(`http://127.0.0.1:8000/entregas/${id}`, {
                 method: 'DELETE'
             }).then(resposta => {
                 if (resposta.ok) {
-                    buscarEntregas() // Recarrega a lista para sumir com a linha apagada
+                    buscarEntregas()
                 } else {
                     alert("Erro ao apagar a entrega.")
                 }
@@ -127,7 +134,6 @@ function CicloWorkspace({ cicloId }) {
             <h2>Workspace: {ciclo ? ciclo.nome : 'Carregando...'}</h2>
 
             <div>
-                {/* LADO ESQUERDO: Formulário */}
                 <div>
                     <h3>Lançar Nova OS</h3>
                     <form onSubmit={salvarLancamento}>
@@ -209,17 +215,23 @@ function CicloWorkspace({ cicloId }) {
                         <button type="submit">Cadastrar Entrega</button>
                     </form>
                 </div>
-
-                {/* LADO DIREITO: Lista de Entregas */}
+<div>
+    <h4>
+        OSs Selecionadas: {entregasSelecionadas.length} | 
+        Total Selecionado: R$ {valorTotalSelecionado.toFixed(2)}
+    </h4>
+</div>
                 <div>
                     <h3>Entregas da Quinzena ({entregas.length})</h3>
                     
                     {entregas.length === 0 ? (
                         <p>Nenhuma entrega lançada neste ciclo ainda.</p>
                     ) : (
+                        
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Sel.</th>
                                     <th>OS</th>
                                     <th>Destino</th>
                                     <th>Veículo</th>
@@ -231,6 +243,13 @@ function CicloWorkspace({ cicloId }) {
                             <tbody>
                                 {entregas.map(entrega => (
                                     <tr key={entrega.id}>
+                                        <td>
+                                            <input 
+                                                type="checkbox" 
+                                                checked={entregasSelecionadas.includes(entrega.id)}
+                                                onChange={() => alternarSelecaoEntrega(entrega.id)}
+                                            />
+                                        </td>
                                         <td>{entrega.os}</td>
                                         <td>{entrega.destino} - {entrega.uf}</td>
                                         <td>{getNomeVeiculo(entrega.veiculo_id)}</td>
