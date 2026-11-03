@@ -5,6 +5,9 @@ function CicloWorkspace({ cicloId }) {
     const [ciclo, setCiclo] = useState(null)
     const [entregas, setEntregas] = useState([])
     const [entregasSelecionadas, setEntregasSelecionadas] = useState([])
+    const [pacotes, setPacotes] = useState([])
+    const [nomePacote, setNomePacote] = useState('')
+    const [valorPacote, setValorPacote] = useState(1000.0)
     
     const [veiculos, setVeiculos] = useState([])
     const [funcionarios, setFuncionarios] = useState([])
@@ -27,6 +30,7 @@ function CicloWorkspace({ cicloId }) {
             .then(dados => setCiclo(dados))
 
         buscarEntregas()
+        buscarPacotes()
     }, [cicloId])
 
     useEffect(() => {
@@ -47,6 +51,13 @@ function CicloWorkspace({ cicloId }) {
         fetch(`http://127.0.0.1:8000/entregas/?ciclo_id=${cicloId}`)
             .then(resposta => resposta.json())
             .then(dados => setEntregas(dados))
+    }
+
+    function buscarPacotes() {
+        // Supondo que o seu backend aceite filtrar pacotes pelo ciclo_id
+        fetch(`http://127.0.0.1:8000/pacotes/?ciclo_id=${cicloId}`)
+            .then(resposta => resposta.json())
+            .then(dados => setPacotes(dados))
     }
 
     function getNomeVeiculo(id) {
@@ -115,6 +126,32 @@ function CicloWorkspace({ cicloId }) {
         })
     }
 
+    function criarPacoteVazio(evento) {
+        evento.preventDefault() // Evita que a página recarregue ao submeter o formulário
+
+        const dadosDoPacote = {
+            ciclo_id: Number(cicloId),
+            nome: nomePacote,
+            valor: Number(valorPacote),
+            observacao: ""
+        }
+
+        fetch('http://127.0.0.1:8000/pacotes/', {
+            method: 'POST',
+            headers: { 'Content-Type' : 'application/json'},
+            body: JSON.stringify(dadosDoPacote)
+        }).then(resposta => {
+            if(resposta.ok) {
+                buscarPacotes()
+                setNomePacote('')
+                setValorPacote(1000.0)
+                alert("Pacote criado com sucesso!")
+            } else {
+                alert("Erro ao criar pacote.")
+            }
+        })
+    }
+
     function deletarEntrega(id) {
         if (window.confirm("Tem certeza que deseja apagar esta OS?")) {
             fetch(`http://127.0.0.1:8000/entregas/${id}`, {
@@ -124,6 +161,21 @@ function CicloWorkspace({ cicloId }) {
                     buscarEntregas()
                 } else {
                     alert("Erro ao apagar a entrega.")
+                }
+            })
+        }
+    }
+
+    function deletarPacote(id) {
+        if (window.confirm("Tem certeza que deseja apagar este pacote?")) {
+            fetch(`http://127.0.0.1:8000/pacotes/${id}`, {
+                method: 'DELETE'
+            }).then(resposta => {
+                if (resposta.ok) {
+                    buscarPacotes()
+                    buscarEntregas() // Recarrega entregas caso alguma estivesse vinculada
+                } else {
+                    alert("Erro ao apagar o pacote.")
                 }
             })
         }
@@ -215,12 +267,51 @@ function CicloWorkspace({ cicloId }) {
                         <button type="submit">Cadastrar Entrega</button>
                     </form>
                 </div>
-<div>
-    <h4>
-        OSs Selecionadas: {entregasSelecionadas.length} | 
-        Total Selecionado: R$ {valorTotalSelecionado.toFixed(2)}
-    </h4>
-</div>
+                <div>
+                    <h4>
+                        OSs Selecionadas: {entregasSelecionadas.length} | 
+                        Total Selecionado: R$ {valorTotalSelecionado.toFixed(2)}
+                    </h4>
+                </div>
+                <div>
+                    <h3>+ Novo Pacote</h3>
+                    <form onSubmit={criarPacoteVazio}>
+                        <label>Nome do Pacote: </label>
+                        <input 
+                            type="text" 
+                            value={nomePacote} 
+                            onChange={(evento) => setNomePacote(evento.target.value)} 
+                            required 
+                        />
+                        
+                        <label> Valor (R$): </label>
+                        <input 
+                            type="number" 
+                            step="0.01" 
+                            value={valorPacote} 
+                            onChange={(evento) => setValorPacote(evento.target.value)} 
+                            required 
+                        />
+                        
+                        <button type="submit">+ Criar Pacote</button>
+                    </form>
+                </div>
+                <div>
+                    <h3>Pacotes do Ciclo ({pacotes.length})</h3>
+                    {pacotes.length === 0 ? (
+                        <p>Nenhum pacote criado ainda.</p>
+                    ) : (
+                        <div>
+                            {pacotes.map(pacote => (
+                                <div key={pacote.id}>
+                                    <strong>{pacote.nome}</strong>
+                                    <p>Valor: R$ {pacote.valor ? pacote.valor.toFixed(2) : '0.00'}</p>
+                                    <button onClick={() => deletarPacote(pacote.id)}>Excluir Pacote</button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 <div>
                     <h3>Entregas da Quinzena ({entregas.length})</h3>
                     
