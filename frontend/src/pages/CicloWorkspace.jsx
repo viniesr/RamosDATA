@@ -52,6 +52,18 @@ function CicloWorkspace({ cicloId }) {
             .then(dados => setEntregas(dados))
     }
 
+    function getNomeVeiculo(id) {
+        if (!id || veiculos.length === 0) return '---'
+        const veiculo = veiculos.find(v => v.id === id)
+        return veiculo ? `${veiculo.marca} - ${veiculo.modelo}` : 'Desconhecido'
+    }
+
+    function getNomeFuncionario(id) {
+        if (!id || funcionarios.length === 0) return '---'
+        const funcionario = funcionarios.find(f => f.id === id)
+        return funcionario ? funcionario.nome : 'Desconhecido'
+    }
+
     // FUNÇÃO: Envia a nova entrega para o backend
     function salvarLancamento(evento) {
         evento.preventDefault()
@@ -93,6 +105,21 @@ function CicloWorkspace({ cicloId }) {
                 alert("Erro ao cadastrar entrega.")
             }
         })
+    }
+
+    function deletarEntrega(id) {
+        // Exibe um alerta de confirmação no navegador
+        if (window.confirm("Tem certeza que deseja apagar esta OS?")) {
+            fetch(`http://127.0.0.1:8000/entregas/${id}`, {
+                method: 'DELETE'
+            }).then(resposta => {
+                if (resposta.ok) {
+                    buscarEntregas() // Recarrega a lista para sumir com a linha apagada
+                } else {
+                    alert("Erro ao apagar a entrega.")
+                }
+            })
+        }
     }
 
     return (
@@ -139,7 +166,7 @@ function CicloWorkspace({ cicloId }) {
                             <select value={veiculoIdForm} onChange={(evento) => setVeiculoIdForm(evento.target.value)}>
                                 <option value="">-- Selecione --</option>
                                 {veiculos.map(veiculo => (
-                                    <option key={veiculo.id} value={veiculo.id}>{veiculo.placa} - {veiculo.modelo}</option>
+                                    <option key={veiculo.id} value={veiculo.id}>{veiculo.marca} - {veiculo.modelo}</option>
                                 ))}
                             </select>
                         </div>
@@ -190,13 +217,32 @@ function CicloWorkspace({ cicloId }) {
                     {entregas.length === 0 ? (
                         <p>Nenhuma entrega lançada neste ciclo ainda.</p>
                     ) : (
-                        <ul>
-                            {entregas.map(entrega => (
-                                <li key={entrega.id}>
-                                    <strong>OS: {entrega.os}</strong> | Destino: {entrega.destino} | Valor: R$ {entrega.valor || '0.00'}
-                                </li>
-                            ))}
-                        </ul>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>OS</th>
+                                    <th>Destino</th>
+                                    <th>Veículo</th>
+                                    <th>Motorista</th>
+                                    <th>Valor (R$)</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {entregas.map(entrega => (
+                                    <tr key={entrega.id}>
+                                        <td>{entrega.os}</td>
+                                        <td>{entrega.destino} - {entrega.uf}</td>
+                                        <td>{getNomeVeiculo(entrega.veiculo_id)}</td>
+                                        <td>{getNomeFuncionario(entrega.motorista_id)}</td>
+                                        <td>{entrega.valor ? entrega.valor.toFixed(2) : '0.00'}</td>
+                                        <td>
+                                            <button onClick={() => deletarEntrega(entrega.id)}>Excluir</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
                 </div>
             </div>
