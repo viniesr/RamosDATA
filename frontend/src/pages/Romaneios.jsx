@@ -7,6 +7,10 @@ function Romaneios() {
     const [nomeNovoCiclo, setNomeNovoCiclo] = useState('')
     const [dataInicioNovoCiclo, setDataInicioNovoCiclo] = useState('')
     const [dataFimNovoCiclo, setDataFimNovoCiclo] = useState('')
+    const [cicloEmEdicaoId, setCicloEmEdicaoId] = useState(null)
+    const [nomeEditando, setNomeEditando] = useState('')
+    const [dataInicioEditando, setDataInicioEditando] = useState('')
+    const [dataFimEditando, setDataFimEditando] = useState('')
 
     // Busca os ciclos no backend assim que a tela abre
     useEffect(() => {
@@ -103,6 +107,45 @@ function Romaneios() {
         })
     }
 
+    function iniciarEdicao(ciclo) {
+        setCicloEmEdicaoId(ciclo.id)
+        setNomeEditando(ciclo.nome)
+        setDataInicioEditando(ciclo.data_inicio || '')
+        setDataFimEditando(ciclo.data_fim || '')
+    }
+
+    function cancelarEdicao() {
+        setCicloEmEdicaoId(null)
+        setNomeEditando('')
+        setDataInicioEditando('')
+        setDataFimEditando('')
+    }
+
+    function salvarEdicaoCiclo(evento, cicloOriginal) {
+        evento.preventDefault()
+
+        const dadosAtualizados = {
+            nome: nomeEditando,
+            data_inicio: dataInicioEditando !== '' ? dataInicioEditando : null,
+            data_fim: dataFimEditando !== '' ? dataFimEditando : null,
+            status: cicloOriginal.status // Mantém o status que já estava
+        }
+
+        fetch(`http://127.0.0.1:8000/ciclos/${cicloOriginal.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosAtualizados)
+        }).then(resposta => {
+            if (resposta.ok) {
+                carregarCiclos()
+                cancelarEdicao()
+                alert("Ciclo atualizado com sucesso!")
+            } else {
+                alert("Erro ao atualizar o ciclo.")
+            }
+        })
+    }
+
     // TELA 1: LISTAGEM GERAL DE CICLOS
     return (
         <div>
@@ -145,21 +188,66 @@ function Romaneios() {
                 ) : (
                     ciclos.map(ciclo => (
                         <div key={ciclo.id}>
-                            <h3>{ciclo.nome}</h3>
-                            <p><strong>Período:</strong> {ciclo.data_inicio} até {ciclo.data_fim}</p>
-                            <p><strong>Status:</strong> {ciclo.status}</p>
-                            
-                            <button onClick={() => setCicloAbertoId(ciclo.id)}>
-                                Abrir Workspace
-                            </button>
+                            {cicloEmEdicaoId === ciclo.id ? (
+                                /* MODO DE EDIÇÃO (Formulário) */
+                                <form onSubmit={(e) => salvarEdicaoCiclo(e, ciclo)}>
+                                    <h4>Editando Ciclo #{ciclo.id}</h4>
+                                    
+                                    <div>
+                                        <label>Nome: </label>
+                                        <input 
+                                            type="text" 
+                                            value={nomeEditando} 
+                                            onChange={(e) => setNomeEditando(e.target.value)} 
+                                            required 
+                                        />
+                                    </div>
 
-                            <button onClick={() => alternarStatusCiclo(ciclo)}>
-                                {ciclo.status === "Aberto" ? "Fechar Ciclo" : "Reabrir Ciclo"}
-                            </button>
+                                    <div>
+                                        <label>Data Início: </label>
+                                        <input 
+                                            type="date" 
+                                            value={dataInicioEditando} 
+                                            onChange={(e) => setDataInicioEditando(e.target.value)} 
+                                        />
+                                    </div>
 
-                            <button onClick={() => deletarCiclo(ciclo.id)}>
-                                Excluir Ciclo
-                            </button>
+                                    <div>
+                                        <label>Data Fim: </label>
+                                        <input 
+                                            type="date" 
+                                            value={dataFimEditando} 
+                                            onChange={(e) => setDataFimEditando(e.target.value)} 
+                                        />
+                                    </div>
+
+                                    <button type="submit">Salvar Alterações</button>
+                                    <button type="button" onClick={cancelarEdicao}>Cancelar</button>
+                                </form>
+                            ) : (
+                                /* MODO DE VISUALIZAÇÃO NORMAL */
+                                <div>
+                                    <h3>{ciclo.nome}</h3>
+                                    <p><strong>Período:</strong> {ciclo.data_inicio} até {ciclo.data_fim}</p>
+                                    <p><strong>Status:</strong> {ciclo.status}</p>
+                                    
+                                    <button onClick={() => setCicloAbertoId(ciclo.id)}>
+                                        Abrir Workspace
+                                    </button>
+
+                                    <button onClick={() => iniciarEdicao(ciclo)}>
+                                        Editar
+                                    </button>
+
+                                    <button onClick={() => alternarStatusCiclo(ciclo)}>
+                                        {ciclo.status === "Aberto" ? "Fechar Ciclo" : "Reabrir Ciclo"}
+                                    </button>
+
+                                    <button onClick={() => deletarCiclo(ciclo.id)}>
+                                        Excluir Ciclo
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}
