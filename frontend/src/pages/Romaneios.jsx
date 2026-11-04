@@ -64,6 +64,45 @@ function Romaneios() {
         })
     }
 
+    function deletarCiclo(id) {
+        if (window.confirm("Tem certeza que deseja apagar este ciclo? Essa ação não poderá ser desfeita.")) {
+            fetch(`http://127.0.0.1:8000/ciclos/${id}`, {
+                method: 'DELETE'
+            }).then(resposta => {
+                if (resposta.ok) {
+                    carregarCiclos() // Atualiza a lista na tela
+                    alert("Ciclo apagado com sucesso!")
+                } else {
+                    alert("Erro ao apagar o ciclo.")
+                }
+            })
+        }
+    }
+
+    function alternarStatusCiclo(ciclo) {
+        // Se está Aberto, vira Fechado. Se está Fechado, vira Aberto.
+        const novoStatus = ciclo.status === "Aberto" ? "Fechado" : "Aberto"
+
+        const dadosAtualizados = {
+            nome: ciclo.nome,
+            data_inicio: ciclo.data_inicio,
+            data_fim: ciclo.data_fim,
+            status: novoStatus
+        }
+
+        fetch(`http://127.0.0.1:8000/ciclos/${ciclo.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosAtualizados)
+        }).then(resposta => {
+            if (resposta.ok) {
+                carregarCiclos() // Atualiza a tela com o novo status
+            } else {
+                alert("Erro ao alterar o status do ciclo.")
+            }
+        })
+    }
+
     // TELA 1: LISTAGEM GERAL DE CICLOS
     return (
         <div>
@@ -106,15 +145,20 @@ function Romaneios() {
                 ) : (
                     ciclos.map(ciclo => (
                         <div key={ciclo.id}>
-                            {/* Correção aplicada: usando ciclo.nome conforme o schemas.py */}
                             <h3>{ciclo.nome}</h3>
                             <p><strong>Período:</strong> {ciclo.data_inicio} até {ciclo.data_fim}</p>
                             <p><strong>Status:</strong> {ciclo.status}</p>
                             
-                            <button 
-                                onClick={() => setCicloAbertoId(ciclo.id)}
-                            >
+                            <button onClick={() => setCicloAbertoId(ciclo.id)}>
                                 Abrir Workspace
+                            </button>
+
+                            <button onClick={() => alternarStatusCiclo(ciclo)}>
+                                {ciclo.status === "Aberto" ? "Fechar Ciclo" : "Reabrir Ciclo"}
+                            </button>
+
+                            <button onClick={() => deletarCiclo(ciclo.id)}>
+                                Excluir Ciclo
                             </button>
                         </div>
                     ))
