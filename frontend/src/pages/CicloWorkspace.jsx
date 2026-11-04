@@ -55,10 +55,13 @@ function CicloWorkspace({ cicloId }) {
     }
 
     function buscarPacotes() {
-        // Supondo que o seu backend aceite filtrar pacotes pelo ciclo_id
         fetch(`http://127.0.0.1:8000/pacotes/?ciclo_id=${cicloId}`)
             .then(resposta => resposta.json())
-            .then(dados => setPacotes(dados))
+            .then(dados => {
+                // Filtro de Segurança: Mantém apenas os pacotes cujo ciclo_id seja IGUAL ao cicloId atual
+                const pacotesDesteCiclo = dados.filter(p => Number(p.ciclo_id) === Number(cicloId))
+                setPacotes(pacotesDesteCiclo)
+            })
     }
 
     function getNomeVeiculo(id) {
@@ -287,14 +290,40 @@ function CicloWorkspace({ cicloId }) {
         }
     }
 
-    // Filtramos a lista geral para pegar apenas as notas fiscais que estão "soltas na mesa"
+   // Filtramos a lista geral para pegar apenas as notas fiscais que estão "soltas na mesa"
     const entregasAvulsas = entregas.filter(e => e.pacote_id === null)
+
+    // MATEMÁTICA DO DASHBOARD:
+    const totalEntregas = entregas.length
+    // Soma 1: Pega o valor base de todos os pacotes fechados (R$ 1000 + R$ 1000...)
+    const somaPacotes = pacotes.reduce((soma, p) => soma + (p.valor || 0), 0)
+    // Soma 2: Pega o valor quebrado apenas das entregas que ainda estão avulsas
+    const somaAvulsas = entregasAvulsas.reduce((soma, e) => soma + (e.valor || 0), 0)
+    
+    // O Faturamento real da quinzena
+    const valorTotalCiclo = somaPacotes + somaAvulsas
+    // A Média: Total dividido pela quantidade de entregas (evitando divisão por zero)
+    const mediaPorEntrega = totalEntregas > 0 ? (valorTotalCiclo / totalEntregas) : 0
 
     
 
     return (
         <div>
             <h2>Workspace: {ciclo ? ciclo.nome : 'Carregando...'}</h2>
+
+            {/* INÍCIO DO DASHBOARD */}
+            <div>
+                <h3>Resumo da Quinzena (Dashboard)</h3>
+                <p><strong>Total de Entregas (OSs):</strong> {totalEntregas}</p>
+                <p><strong>Valor em Pacotes:</strong> R$ {somaPacotes.toFixed(2)}</p>
+                <p><strong>Valor em Avulsas:</strong> R$ {somaAvulsas.toFixed(2)}</p>
+                <p><strong>Faturamento Total:</strong> R$ {valorTotalCiclo.toFixed(2)}</p>
+                <p><strong>Média por Entrega:</strong> R$ {mediaPorEntrega.toFixed(2)}</p>
+            </div>
+            <hr />
+            {/* FIM DO DASHBOARD */}
+
+            
 
             <div>
                 <div>
@@ -443,7 +472,7 @@ function CicloWorkspace({ cicloId }) {
                                 <ul>
                                     {entregasDoPacote.map(e => (
                                         <li key={e.id}>
-                                            OS: {e.os} - {e.destino} ({e.uf}) | R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
+                                            OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
                                             <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
                                         </li>
                                     ))}
