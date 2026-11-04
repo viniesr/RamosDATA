@@ -9,6 +9,9 @@ function CicloWorkspace({ cicloId }) {
     const [nomePacote, setNomePacote] = useState('')
     const [valorPacote, setValorPacote] = useState(1000.0)
     const [pacoteDestinoId, setPacoteDestinoId] = useState('')
+    const [pacoteEmEdicaoId, setPacoteEmEdicaoId] = useState(null)
+    const [nomePacoteEditando, setNomePacoteEditando] = useState('')
+    const [valorPacoteEditando, setValorPacoteEditando] = useState(1000.0)
     
     const [veiculos, setVeiculos] = useState([])
     const [funcionarios, setFuncionarios] = useState([])
@@ -290,6 +293,43 @@ function CicloWorkspace({ cicloId }) {
         }
     }
 
+    function iniciarEdicaoPacote(pacote) {
+        setPacoteEmEdicaoId(pacote.id)
+        setNomePacoteEditando(pacote.nome)
+        setValorPacoteEditando(pacote.valor || 1000.0)
+    }
+
+    function cancelarEdicaoPacote() {
+        setPacoteEmEdicaoId(null)
+        setNomePacoteEditando('')
+        setValorPacoteEditando(1000.0)
+    }
+
+    function salvarEdicaoPacote(evento, pacoteOriginal) {
+        evento.preventDefault()
+
+        const dadosAtualizados = {
+            ciclo_id: pacoteOriginal.ciclo_id,
+            nome: nomePacoteEditando,
+            valor: Number(valorPacoteEditando),
+            observacao: pacoteOriginal.observacao || ""
+        }
+
+        fetch(`http://127.0.0.1:8000/pacotes/${pacoteOriginal.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dadosAtualizados)
+        }).then(resposta => {
+            if (resposta.ok) {
+                buscarPacotes()
+                cancelarEdicaoPacote()
+                alert("Pacote atualizado com sucesso!")
+            } else {
+                alert("Erro ao atualizar o pacote.")
+            }
+        })
+    }
+
    // Filtramos a lista geral para pegar apenas as notas fiscais que estão "soltas na mesa"
     const entregasAvulsas = entregas.filter(e => e.pacote_id === null)
 
@@ -449,44 +489,74 @@ function CicloWorkspace({ cicloId }) {
                     </form>
                 </div>
                 <div>
-    <h3>Pacotes do Ciclo ({pacotes.length})</h3>
-    {pacotes.length === 0 ? (
-        <p>Nenhum pacote criado ainda.</p>
-    ) : (
-        <div>
-            {pacotes.map(pacote => {
-                // Filtramos apenas as entregas que pertencem a ESTE pacote específico
-                const entregasDoPacote = entregas.filter(e => e.pacote_id === pacote.id)
-
-                return (
-                    <div key={pacote.id}>
-                        <strong>{pacote.nome}</strong>
-                        <p>Valor do Pacote: R$ {pacote.valor ? pacote.valor.toFixed(2) : '0.00'}</p>
-                        
-                        {/* Lista das OSs que estão dentro desta pasta/pacote */}
+                    <h3>Pacotes do Ciclo ({pacotes.length})</h3>
+                    {pacotes.length === 0 ? (
+                        <p>Nenhum pacote criado ainda.</p>
+                    ) : (
                         <div>
-                            <p><strong>Entregas Incluídas ({entregasDoPacote.length}):</strong></p>
-                            {entregasDoPacote.length === 0 ? (
-                                <p><em>Nenhuma entrega vinculada a este pacote ainda.</em></p>
-                            ) : (
-                                <ul>
-                                    {entregasDoPacote.map(e => (
-                                        <li key={e.id}>
-                                            OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
-                                            <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
+                            {pacotes.map(pacote => {
+                                const entregasDoPacote = entregas.filter(e => e.pacote_id === pacote.id)
 
-                        <button onClick={() => deletarPacote(pacote.id)}>Excluir Pacote</button>
-                    </div>
-                )
-            })}
-        </div>
-    )}
-</div>
+                                return (
+                                    <div key={pacote.id}>
+                                        {pacoteEmEdicaoId === pacote.id ? (
+                                            /* MODO DE EDIÇÃO DO PACOTE */
+                                            <form onSubmit={(e) => salvarEdicaoPacote(e, pacote)}>
+                                                <h4>Editando {pacote.nome}</h4>
+                                                <div>
+                                                    <label>Nome do Pacote: </label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={nomePacoteEditando} 
+                                                        onChange={(e) => setNomePacoteEditando(e.target.value)} 
+                                                        required 
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label>Valor (R$): </label>
+                                                    <input 
+                                                        type="number" 
+                                                        step="0.01" 
+                                                        value={valorPacoteEditando} 
+                                                        onChange={(e) => setValorPacoteEditando(e.target.value)} 
+                                                        required 
+                                                    />
+                                                </div>
+                                                <button type="submit">Salvar Pacote</button>
+                                                <button type="button" onClick={cancelarEdicaoPacote}>Cancelar</button>
+                                            </form>
+                                        ) : (
+                                            /* MODO VISUALIZAÇÃO NORMAL */
+                                            <div>
+                                                <strong>{pacote.nome}</strong>
+                                                <p>Valor do Pacote: R$ {pacote.valor ? pacote.valor.toFixed(2) : '0.00'}</p>
+                                                
+                                                <div>
+                                                    <p><strong>Entregas Incluídas ({entregasDoPacote.length}):</strong></p>
+                                                    {entregasDoPacote.length === 0 ? (
+                                                        <p><em>Nenhuma entrega vinculada a este pacote ainda.</em></p>
+                                                    ) : (
+                                                        <ul>
+                                                            {entregasDoPacote.map(e => (
+                                                                <li key={e.id}>
+                                                                    OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
+                                                                    <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </div>
+
+                                                <button onClick={() => iniciarEdicaoPacote(pacote)}>Editar Pacote</button>
+                                                <button onClick={() => deletarPacote(pacote.id)}>Excluir Pacote</button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
                 <div>
                     <h3>Entregas Avulsas da Quinzena ({entregasAvulsas.length})</h3>
                     
