@@ -12,6 +12,7 @@ function CicloWorkspace({ cicloId }) {
     const [pacoteEmEdicaoId, setPacoteEmEdicaoId] = useState(null)
     const [nomePacoteEditando, setNomePacoteEditando] = useState('')
     const [valorPacoteEditando, setValorPacoteEditando] = useState(1000.0)
+    const [entregaEmEdicaoId, setEntregaEmEdicaoId] = useState(null)
     
     const [veiculos, setVeiculos] = useState([])
     const [funcionarios, setFuncionarios] = useState([])
@@ -117,26 +118,56 @@ function CicloWorkspace({ cicloId }) {
             status: "Entregue"
         }
 
-        fetch('http://127.0.0.1:8000/entregas/', {
-            method: 'POST',
+        // Se estamos a editar (entregaEmEdicaoId existe), faz PUT. Se é nova, faz POST.
+        const url = entregaEmEdicaoId 
+            ? `http://127.0.0.1:8000/entregas/${entregaEmEdicaoId}` 
+            : 'http://127.0.0.1:8000/entregas/'
+        
+        const metodo = entregaEmEdicaoId ? 'PUT' : 'POST'
+
+        fetch(url, {
+            method: metodo,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dadosDaEntrega)
         }).then(resposta => {
             if (resposta.ok) {
-                setOs('')
-                setDestino('')
-                setValor('')
-                setObservacao('')
-                setVeiculoIdForm('')
-                setMotoristaIdForm('')
-                setAjudanteIdForm('')
-                setVendedorIdForm('')
-                
-                buscarEntregas()
+                cancelarEdicaoEntrega() // Limpa os campos e sai do modo de edição
+                buscarEntregas() // Recarrega a lista
+                alert(entregaEmEdicaoId ? "Entrega atualizada com sucesso!" : "Entrega cadastrada com sucesso!")
             } else {
-                alert("Erro ao cadastrar entrega.")
+                alert("Erro ao salvar entrega.")
             }
         })
+    }
+
+    function iniciarEdicaoEntrega(entrega) {
+        setEntregaEmEdicaoId(entrega.id)
+        
+        // Puxa todos os dados da entrega para os campos do formulário do topo
+        setOs(entrega.os || '')
+        setDestino(entrega.destino || '')
+        setUf(entrega.uf || 'DF')
+        setDataEntrega(entrega.data || new Date().toISOString().split('T')[0])
+        setValor(entrega.valor || '')
+        setObservacao(entrega.observacao || '')
+        setVeiculoIdForm(entrega.veiculo_id || '')
+        setMotoristaIdForm(entrega.motorista_id || '')
+        setAjudanteIdForm(entrega.ajudante1_id || '')
+        setVendedorIdForm(entrega.vendedor_id || '')
+    }
+
+    function cancelarEdicaoEntrega() {
+        setEntregaEmEdicaoId(null)
+        
+        // Limpa todos os campos do formulário
+        setOs('')
+        setDestino('')
+        setValor('')
+        setObservacao('')
+        setVeiculoIdForm('')
+        setMotoristaIdForm('')
+        setAjudanteIdForm('')
+        setVendedorIdForm('')
     }
 
     function criarPacoteVazio(evento) {
@@ -351,7 +382,7 @@ function CicloWorkspace({ cicloId }) {
         <div>
             <h2>Workspace: {ciclo ? ciclo.nome : 'Carregando...'}</h2>
 
-            {/* INÍCIO DO DASHBOARD */}
+            {/* DASHBOARD */}
             <div>
                 <h3>Resumo da Quinzena (Dashboard)</h3>
                 <p><strong>Total de Entregas (OSs):</strong> {totalEntregas}</p>
@@ -361,92 +392,98 @@ function CicloWorkspace({ cicloId }) {
                 <p><strong>Média por Entrega:</strong> R$ {mediaPorEntrega.toFixed(2)}</p>
             </div>
             <hr />
-            {/* FIM DO DASHBOARD */}
 
-            
-
+            {/* FORMULÁRIO DE LANÇAMENTO / EDIÇÃO DE OS */}
             <div>
-                <div>
-                    <h3>Lançar Nova OS</h3>
-                    <form onSubmit={salvarLancamento}>
-                        <div>
-                            <label>OS: </label>
-                            <input type="text" value={os} onChange={(evento) => setOs(evento.target.value)} required />
-                        </div>
+                <h3>{entregaEmEdicaoId ? "Editar OS" : "Lançar Nova OS"}</h3>
+                <form onSubmit={salvarLancamento}>
+                    <div>
+                        <label>OS: </label>
+                        <input type="text" value={os} onChange={(evento) => setOs(evento.target.value)} required />
+                    </div>
 
-                        <div>
-                            <label>Destino/Cidade: </label>
-                            <input type="text" value={destino} onChange={(evento) => setDestino(evento.target.value)} required />
-                        </div>
+                    <div>
+                        <label>Destino/Cidade: </label>
+                        <input type="text" value={destino} onChange={(evento) => setDestino(evento.target.value)} required />
+                    </div>
 
-                        <div>
-                            <label>UF: </label>
-                            <select value={uf} onChange={(evento) => setUf(evento.target.value)} required>
-                                <option value="DF">DF</option>
-                                <option value="GO">GO</option>
-                                <option value="BA">BA</option>
-                                <option value="MG">MG</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label>UF: </label>
+                        <select value={uf} onChange={(evento) => setUf(evento.target.value)} required>
+                            <option value="DF">DF</option>
+                            <option value="GO">GO</option>
+                            <option value="BA">BA</option>
+                            <option value="MG">MG</option>
+                        </select>
+                    </div>
 
-                        <div>
-                            <label>Data: </label>
-                            <input type="date" value={dataEntrega} onChange={(evento) => setDataEntrega(evento.target.value)} required />
-                        </div>
+                    <div>
+                        <label>Data: </label>
+                        <input type="date" value={dataEntrega} onChange={(evento) => setDataEntrega(evento.target.value)} required />
+                    </div>
 
-                        <div>
-                            <label>Valor (R$): </label>
-                            <input type="number" step="0.01" value={valor} onChange={(evento) => setValor(evento.target.value)} />
-                        </div>
+                    <div>
+                        <label>Valor (R$): </label>
+                        <input type="number" step="0.01" value={valor} onChange={(evento) => setValor(evento.target.value)} />
+                    </div>
 
-                        <div>
-                            <label>Veículo: </label>
-                            <select value={veiculoIdForm} onChange={(evento) => setVeiculoIdForm(evento.target.value)}>
-                                <option value="">-- Selecione --</option>
-                                {veiculos.map(veiculo => (
-                                    <option key={veiculo.id} value={veiculo.id}>{veiculo.marca} - {veiculo.modelo}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div>
+                        <label>Veículo: </label>
+                        <select value={veiculoIdForm} onChange={(evento) => setVeiculoIdForm(evento.target.value)}>
+                            <option value="">-- Selecione --</option>
+                            {veiculos.map(veiculo => (
+                                <option key={veiculo.id} value={veiculo.id}>{veiculo.marca} - {veiculo.modelo}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        <div>
-                            <label>Motorista: </label>
-                            <select value={motoristaIdForm} onChange={(evento) => setMotoristaIdForm(evento.target.value)}>
-                                <option value="">-- Selecione --</option>
-                                {funcionarios.map(funcionario => (
-                                    <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div>
+                        <label>Motorista: </label>
+                        <select value={motoristaIdForm} onChange={(evento) => setMotoristaIdForm(evento.target.value)}>
+                            <option value="">-- Selecione --</option>
+                            {funcionarios.map(funcionario => (
+                                <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        <div>
-                            <label>Ajudante: </label>
-                            <select value={ajudanteIdForm} onChange={(evento) => setAjudanteIdForm(evento.target.value)}>
-                                <option value="">-- Nenhum --</option>
-                                {funcionarios.map(funcionario => (
-                                    <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div>
+                        <label>Ajudante: </label>
+                        <select value={ajudanteIdForm} onChange={(evento) => setAjudanteIdForm(evento.target.value)}>
+                            <option value="">-- Nenhum --</option>
+                            {funcionarios.map(funcionario => (
+                                <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        <div>
-                            <label>Vendedor: </label>
-                            <select value={vendedorIdForm} onChange={(evento) => setVendedorIdForm(evento.target.value)}>
-                                <option value="">-- Selecione --</option>
-                                {vendedores.map(vendedor => (
-                                    <option key={vendedor.id} value={vendedor.id}>{vendedor.nome}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div>
+                        <label>Vendedor: </label>
+                        <select value={vendedorIdForm} onChange={(evento) => setVendedorIdForm(evento.target.value)}>
+                            <option value="">-- Selecione --</option>
+                            {vendedores.map(vendedor => (
+                                <option key={vendedor.id} value={vendedor.id}>{vendedor.nome}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        <div>
-                            <label>Observação: </label>
-                            <input type="text" value={observacao} onChange={(evento) => setObservacao(evento.target.value)} />
-                        </div>
+                    <div>
+                        <label>Observação: </label>
+                        <input type="text" value={observacao} onChange={(evento) => setObservacao(evento.target.value)} />
+                    </div>
 
-                        <button type="submit">Cadastrar Entrega</button>
-                    </form>
-                </div>
+                    <button type="submit">
+                        {entregaEmEdicaoId ? "Salvar Alterações" : "Cadastrar Entrega"}
+                    </button>
+
+                    {entregaEmEdicaoId && (
+                        <button type="button" onClick={cancelarEdicaoEntrega}>
+                            Cancelar Edição
+                        </button>
+                    )}
+                </form>
+            </div>
+                
                 <div>
                     <h4>
                         OSs Selecionadas: {entregasSelecionadas.length} | 
@@ -539,9 +576,10 @@ function CicloWorkspace({ cicloId }) {
                                                         <ul>
                                                             {entregasDoPacote.map(e => (
                                                                 <li key={e.id}>
-                                                                    OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
-                                                                    <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
-                                                                </li>
+                                            OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
+                                            <button onClick={() => iniciarEdicaoEntrega(e)}>Editar</button> {" - "}
+                                            <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
+                                        </li>
                                                             ))}
                                                         </ul>
                                                     )}
@@ -595,6 +633,7 @@ function CicloWorkspace({ cicloId }) {
                                         
                                         {/* Como é avulsa, só tem a opção de Excluir */}
                                         <td>
+                                            <button onClick={() => iniciarEdicaoEntrega(entrega)}>Editar</button>
                                             <button onClick={() => deletarEntrega(entrega.id)}>Excluir</button>
                                         </td>
                                     </tr>
@@ -604,7 +643,6 @@ function CicloWorkspace({ cicloId }) {
                     )}
                 </div>
             </div>
-        </div>
     )
 }
 
