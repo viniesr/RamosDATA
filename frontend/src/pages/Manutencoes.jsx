@@ -20,12 +20,10 @@ function Manutencoes(){
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
 
     useEffect(() => {
-        // Puxa a lista de veículos para sabermos o nome/placa pelo ID
         fetch('http://127.0.0.1:8000/veiculos/')
             .then((resposta) => resposta.json())
             .then((dados) => setVeiculos(dados))
 
-        // Puxa a lista de manutenções cadastradas
         fetch('http://127.0.0.1:8000/manutencoes/')
             .then((resposta) => resposta.json())
             .then((dados) => setManutencoes(dados))
@@ -59,11 +57,6 @@ function Manutencoes(){
         setArquivoSelecionado(null)
         setIdEditando(manutencao.id)
         setTelaInterna('formulario')
-    }
-
-    function obterNomeVeiculo(id) {
-        const veiculo = veiculos.find((v) => v.id === id)
-        return veiculo ? `${veiculo.modelo} - ${veiculo.placa || 'Sem Placa'}` : `Veículo #${id}`
     }
 
     async function salvarManutencao(evento){
@@ -100,14 +93,12 @@ function Manutencoes(){
             comprovante: caminhoComprovante !== '' ? caminhoComprovante : null
         }
 
-        // 3. Define se é criação (POST) ou edição (PUT)
         const url = idEditando !== null 
             ? 'http://127.0.0.1:8000/manutencoes/' + idEditando 
             : 'http://127.0.0.1:8000/manutencoes/'
 
         const metodo = idEditando !== null ? 'PUT' : 'POST'
 
-        // 4. Salva no backend e volta para a tela de lista
         fetch(url, {
             method: metodo,
             headers: { 'Content-Type': 'application/json' },
@@ -115,11 +106,10 @@ function Manutencoes(){
         }).then(() => {
             setTelaInterna('lista')
         })
-
     }
 
     function deletarManutencao(manutencao) {
-        const confirmou = window.confirm(`Tem certeza que deseja apagar a manutenção do veículo ${obterNomeVeiculo(manutencao.veiculo_id)}?`)
+        const confirmou = window.confirm("Tem certeza que deseja apagar este registro de manutenção?")
 
         if (confirmou) {
             fetch('http://127.0.0.1:8000/manutencoes/' + manutencao.id, {
@@ -130,66 +120,97 @@ function Manutencoes(){
         }
     }
 
-return (
+    return (
         <div>
             {telaInterna === 'lista' ? (
                 <div>
                     <h2>Lista de Manutenções</h2>
                     <button onClick={FormularioNovaManutencao}>+ Registrar Manutenção</button>
+                    <br /><br />
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Veículo</th>
-                                <th>Tipo</th>
-                                <th>Descrição</th>
-                                <th>KM</th>
-                                <th>Valor</th>
-                                <th>Comprovante</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {manutencoes.map((item) => (
-                                <tr key={item.id}>
-                                    <td>
-                                        {item.data ? item.data.split('-').reverse().join('/') : '-'}
-                                    </td>
-                                    <td>{obterNomeVeiculo(item.veiculo_id)}</td>
-                                    <td>{item.tipo}</td>
-                                    <td>{item.descricao}</td>
-                                    <td>{item.km !== null ? `${item.km} km` : '-'}</td>
-                                    <td>
-                                        {item.valor !== null 
-                                            ? `R$ ${Number(item.valor).toFixed(2).replace('.', ',')}` 
-                                            : '-'}
-                                    </td>
-                                    <td>
-                                        {item.comprovante ? (
-                                            <a 
-                                                href={`http://127.0.0.1:8000/${item.comprovante}`} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                            >
-                                                📎 Ver Nota
-                                            </a>
-                                        ) : (
-                                            '-'
-                                        )}
-                                    </td>
-                                    <td>
-                                        <button onClick={() => FormularioEditarManutencao(item)}>Editar</button>
-                                        <button onClick={() => deletarManutencao(item)}>Excluir</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {/* AGRUPAMENTO POR VEÍCULO */}
+                    {veiculos.map(veiculo => {
+                        const manutencoesDoVeiculo = manutencoes.filter(m => m.veiculo_id === veiculo.id)
+                        let totalValorManutencao = 0
+
+                        return (
+                            <div key={veiculo.id}>
+                                <h3>{veiculo.marca} {veiculo.modelo}</h3>
+
+                                {manutencoesDoVeiculo.length === 0 ? (
+                                    <p><em>Nenhuma manutenção registrada para este veículo.</em></p>
+                                ) : (
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Tipo</th>
+                                                <th>Descrição</th>
+                                                <th>KM</th>
+                                                <th>Valor</th>
+                                                <th>Comprovante</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {manutencoesDoVeiculo.map((item) => {
+                                                const v = item.valor ? Number(item.valor) : 0
+                                                totalValorManutencao += v
+
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td>
+                                                            {item.data ? item.data.split('-').reverse().join('/') : '-'}
+                                                        </td>
+                                                        <td>{item.tipo}</td>
+                                                        <td>{item.descricao}</td>
+                                                        <td>{item.km !== null ? `${item.km} km` : '-'}</td>
+                                                        <td>
+                                                            {item.valor !== null 
+                                                                ? `R$ ${v.toFixed(2).replace('.', ',')}` 
+                                                                : '-'}
+                                                        </td>
+                                                        <td>
+                                                            {item.comprovante ? (
+                                                                <a 
+                                                                    href={`http://127.0.0.1:8000/${item.comprovante}`} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    📎 Ver Nota
+                                                                </a>
+                                                            ) : (
+                                                                '-'
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            <button onClick={() => FormularioEditarManutencao(item)}>Editar</button>
+                                                            <button onClick={() => deletarManutencao(item)}>Excluir</button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>TOTAL DO VEÍCULO</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td><strong>R$ {totalValorManutencao.toFixed(2).replace('.', ',')}</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                )}
+                                <hr />
+                            </div>
+                        )
+                    })}
                 </div>
             ) : (
                 <div>
-                    <div>
                     <h2>{idEditando ? 'Editando Manutenção' : 'Nova Manutenção'}</h2>
 
                     <form onSubmit={salvarManutencao}>
@@ -203,7 +224,7 @@ return (
                                 <option value="">-- Selecione o Veículo --</option>
                                 {veiculos.map((veiculo) => (
                                     <option key={veiculo.id} value={veiculo.id}>
-                                        {veiculo.modelo} - {veiculo.placa || 'Sem Placa'}
+                                        {veiculo.marca} {veiculo.modelo}
                                     </option>
                                 ))}
                             </select>
@@ -286,7 +307,6 @@ return (
                             />
                         </div>
 
-                        {/* Campo para anexar a Nota Fiscal / Comprovante */}
                         <div>
                             <label>Comprovante / NF (PDF ou Imagem): </label>
                             <input
@@ -318,9 +338,9 @@ return (
                         </button>
                     </form>
                 </div>
-                </div>
             )}
         </div>
-    ) }
+    )
+}
 
 export default Manutencoes
