@@ -13,7 +13,8 @@ function CicloWorkspace({ cicloId }) {
     const [nomePacoteEditando, setNomePacoteEditando] = useState('')
     const [valorPacoteEditando, setValorPacoteEditando] = useState(1000.0)
     const [entregaEmEdicaoId, setEntregaEmEdicaoId] = useState(null)
-    
+    const [entregaExpandidaId, setEntregaExpandidaId] = useState(null)
+
     const [veiculos, setVeiculos] = useState([])
     const [funcionarios, setFuncionarios] = useState([])
     const [vendedores, setVendedores] = useState([])
@@ -26,7 +27,9 @@ function CicloWorkspace({ cicloId }) {
     const [observacao, setObservacao] = useState('')
     const [veiculoIdForm, setVeiculoIdForm] = useState('')
     const [motoristaIdForm, setMotoristaIdForm] = useState('')
-    const [ajudanteIdForm, setAjudanteIdForm] = useState('')
+    const [ajudante1IdForm, setAjudante1IdForm] = useState('')
+    const [ajudante2IdForm, setAjudante2IdForm] = useState('')
+    const [ajudante3IdForm, setAjudante3IdForm] = useState('')
     const [vendedorIdForm, setVendedorIdForm] = useState('')
 
     useEffect(() => {
@@ -86,19 +89,29 @@ function CicloWorkspace({ cicloId }) {
         return pacoteEncontrado ? pacoteEncontrado.nome : 'Pacote Não Encontrado'
     }
 
+    function getNomeVendedor(id) {
+        if (!id || vendedores.length === 0) return '---'
+        const vendedor = vendedores.find(v => v.id === id)
+        return vendedor ? vendedor.nome : 'Desconhecido'
+    }
+
     function alternarSelecaoEntrega(id) {
     if (entregasSelecionadas.includes(id)) {
         setEntregasSelecionadas(entregasSelecionadas.filter(item => item !== id))
     } else {
         setEntregasSelecionadas([...entregasSelecionadas, id])
     }
-}
+    }
     const valorTotalSelecionado = entregas.reduce((soma, entrega) => {
     if (entregasSelecionadas.includes(entrega.id)) {
         return soma + (entrega.valor || 0)
+        }
+        return soma
+    }, 0)
+
+    function alternarDetalhesEntrega(id) {
+        setEntregaExpandidaId(entregaExpandidaId === id ? null : id)
     }
-    return soma
-}, 0)
 
     function salvarLancamento(evento) {
         evento.preventDefault()
@@ -111,7 +124,9 @@ function CicloWorkspace({ cicloId }) {
             uf: uf !== '' ? uf : null,
             veiculo_id: veiculoIdForm !== '' ? Number(veiculoIdForm) : null,
             motorista_id: motoristaIdForm !== '' ? Number(motoristaIdForm) : null,
-            ajudante1_id: ajudanteIdForm !== '' ? Number(ajudanteIdForm) : null,
+            ajudante1_id: ajudante1IdForm !== '' ? Number(ajudante1IdForm) : null,
+            ajudante2_id: ajudante2IdForm !== '' ? Number(ajudante2IdForm) : null,
+            ajudante3_id: ajudante3IdForm !== '' ? Number(ajudante3IdForm) : null,
             vendedor_id: vendedorIdForm !== '' ? Number(vendedorIdForm) : null,
             valor: valor !== '' ? parseFloat(valor) : null,
             observacao: observacao !== '' ? observacao : null,
@@ -152,7 +167,9 @@ function CicloWorkspace({ cicloId }) {
         setObservacao(entrega.observacao || '')
         setVeiculoIdForm(entrega.veiculo_id || '')
         setMotoristaIdForm(entrega.motorista_id || '')
-        setAjudanteIdForm(entrega.ajudante1_id || '')
+        setAjudante1IdForm(entrega.ajudante1_id || '')
+        setAjudante2IdForm(entrega.ajudante2_id || '')
+        setAjudante3IdForm(entrega.ajudante3_id || '')
         setVendedorIdForm(entrega.vendedor_id || '')
     }
 
@@ -166,7 +183,9 @@ function CicloWorkspace({ cicloId }) {
         setObservacao('')
         setVeiculoIdForm('')
         setMotoristaIdForm('')
-        setAjudanteIdForm('')
+        setAjudante1IdForm('')
+        setAjudante2IdForm('')
+        setAjudante3IdForm('')
         setVendedorIdForm('')
     }
 
@@ -448,8 +467,28 @@ function CicloWorkspace({ cicloId }) {
                     </div>
 
                     <div>
-                        <label>Ajudante: </label>
-                        <select value={ajudanteIdForm} onChange={(evento) => setAjudanteIdForm(evento.target.value)}>
+                        <label>Ajudante 1: </label>
+                        <select value={ajudante1IdForm} onChange={(evento) => setAjudante1IdForm(evento.target.value)}>
+                            <option value="">-- Nenhum --</option>
+                            {funcionarios.map(funcionario => (
+                                <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Ajudante 2: </label>
+                        <select value={ajudante2IdForm} onChange={(evento) => setAjudante2IdForm(evento.target.value)}>
+                            <option value="">-- Nenhum --</option>
+                            {funcionarios.map(funcionario => (
+                                <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Ajudante 3: </label>
+                        <select value={ajudante3IdForm} onChange={(evento) => setAjudante3IdForm(evento.target.value)}>
                             <option value="">-- Nenhum --</option>
                             {funcionarios.map(funcionario => (
                                 <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
@@ -576,10 +615,22 @@ function CicloWorkspace({ cicloId }) {
                                                         <ul>
                                                             {entregasDoPacote.map(e => (
                                                                 <li key={e.id}>
-                                            OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
-                                            <button onClick={() => iniciarEdicaoEntrega(e)}>Editar</button> {" - "}
-                                            <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
-                                        </li>
+                                                                    OS: {e.os} - {e.destino} ({e.uf}) | {getNomeVeiculo(e.veiculo_id)} | {getNomeFuncionario(e.motorista_id)} - R$ {e.valor ? e.valor.toFixed(2) : '0.00'} {" - "}
+                                                                    <button onClick={() => alternarDetalhesEntrega(e.id)}>
+                                                                        {entregaExpandidaId === e.id ? "- Detalhes" : "+ Detalhes"}
+                                                                    </button> {" - "}
+                                                                    <button onClick={() => iniciarEdicaoEntrega(e)}>Editar</button> {" - "}
+                                                                    <button onClick={() => removerEntregaDoPacote(e)}>Soltar</button>
+
+                                                                    {/* FICHA TÉCNICA DA OS NO PACOTE */}
+                                                                    {entregaExpandidaId === e.id && (
+                                                                        <div>
+                                                                            <p>↳ <strong>Ajudante 1:</strong> {getNomeFuncionario(e.ajudante1_id)} | <strong>Ajudante 2:</strong> {getNomeFuncionario(e.ajudante2_id)} | <strong>Ajudante 3:</strong> {getNomeFuncionario(e.ajudante3_id)}</p>
+                                                                            <p>↳ <strong>Vendedor:</strong> {getNomeVendedor(e.vendedor_id)}</p>
+                                                                            <p>↳ <strong>Observação:</strong> {e.observacao || 'Nenhuma'}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </li>
                                                             ))}
                                                         </ul>
                                                     )}
@@ -615,28 +666,44 @@ function CicloWorkspace({ cicloId }) {
                             </thead>
                             <tbody>
                                 {entregasAvulsas.map(entrega => (
-                                    <tr key={entrega.id}>
-                                        <td>
-                                            <input 
-                                                type="checkbox" 
-                                                checked={entregasSelecionadas.includes(entrega.id)}
-                                                onChange={() => alternarSelecaoEntrega(entrega.id)}
-                                            />
-                                        </td>
-                                        <td>{entrega.os}</td>
-                                        <td>{entrega.destino} - {entrega.uf}</td>
-                                        <td>{getNomeVeiculo(entrega.veiculo_id)}</td>
-                                        <td>{getNomeFuncionario(entrega.motorista_id)}</td>
-                                        
-                                        {/* Aqui devolvemos a coluna do Valor que tinha sumido! */}
-                                        <td>{entrega.valor ? entrega.valor.toFixed(2) : '0.00'}</td>
-                                        
-                                        {/* Como é avulsa, só tem a opção de Excluir */}
-                                        <td>
-                                            <button onClick={() => iniciarEdicaoEntrega(entrega)}>Editar</button>
-                                            <button onClick={() => deletarEntrega(entrega.id)}>Excluir</button>
-                                        </td>
-                                    </tr>
+                                    <>
+                                        <tr key={entrega.id}>
+                                            <td>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={entregasSelecionadas.includes(entrega.id)}
+                                                    onChange={() => alternarSelecaoEntrega(entrega.id)}
+                                                />
+                                            </td>
+                                            <td>{entrega.os}</td>
+                                            <td>{entrega.destino} - {entrega.uf}</td>
+                                            <td>{getNomeVeiculo(entrega.veiculo_id)}</td>
+                                            <td>{getNomeFuncionario(entrega.motorista_id)}</td>
+                                            <td>{entrega.valor ? entrega.valor.toFixed(2) : '0.00'}</td>
+                                            <td>
+                                                <button onClick={() => alternarDetalhesEntrega(entrega.id)}>
+                                                    {entregaExpandidaId === entrega.id ? "- Detalhes" : "+ Detalhes"}
+                                                </button>
+                                                <button onClick={() => iniciarEdicaoEntrega(entrega)}>Editar</button>
+                                                <button onClick={() => deletarEntrega(entrega.id)}>Excluir</button>
+                                            </td>
+                                        </tr>
+
+                                        {/* LINHA EXPANSÍVEL DE DETALHES DA OS */}
+                                        {entregaExpandidaId === entrega.id && (
+                                            <tr key={`detalhes-${entrega.id}`}>
+                                                <td colSpan="7">
+                                                    <div>
+                                                        <p><strong>Ajudante 1:</strong> {getNomeFuncionario(entrega.ajudante1_id)}</p>
+                                                        <p><strong>Ajudante 2:</strong> {getNomeFuncionario(entrega.ajudante2_id)}</p>
+                                                        <p><strong>Ajudante 3:</strong> {getNomeFuncionario(entrega.ajudante3_id)}</p>
+                                                        <p><strong>Vendedor:</strong> {getNomeVendedor(entrega.vendedor_id)}</p>
+                                                        <p><strong>Observação:</strong> {entrega.observacao || 'Nenhuma'}</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </>
                                 ))}
                             </tbody>
                         </table>
