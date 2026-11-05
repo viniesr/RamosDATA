@@ -447,3 +447,30 @@ def delete_provento(db: Session, provento_id: int):
         db.commit()
         return True
     return False
+
+def create_rodagem(db: Session, rodagem: schemas.RodagemCreate):
+    db_rodagem = models.Rodagem(**rodagem.model_dump())
+    db.add(db_rodagem)
+    db.commit()
+    db.refresh(db_rodagem)
+    return db_rodagem
+
+def get_rodagens(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Rodagem).offset(skip).limit(limit).all()
+
+def update_rodagem(db: Session, rodagem_id: int, updating_rodagem: schemas.RodagemCreate):
+    db_rodagem = db.query(models.Rodagem).filter(models.Rodagem.id == rodagem_id).first()
+    if db_rodagem:
+        for chave, valor in updating_rodagem.model_dump().items():
+            setattr(db_rodagem, chave, valor)
+        db.commit()
+        db.refresh(db_rodagem)
+    return db_rodagem
+
+def delete_rodagem(db: Session, rodagem_id: int):
+    db_rodagem = db.query(models.Rodagem).filter(models.Rodagem.id == rodagem_id).first()
+    if db_rodagem:
+        db.delete(db_rodagem)
+        db.commit()
+        return True
+    return False
