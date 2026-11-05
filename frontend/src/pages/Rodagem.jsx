@@ -6,6 +6,7 @@ function Rodagem(){
 
     const [rodagens, setRodagens] = useState([])
     const [veiculos, setVeiculos] = useState([])
+    const [abastecimentos, setAbastecimentos] = useState([])
 
     const [veiculoId, setVeiculoId] = useState('')
     const [semana, setSemana] = useState('')
@@ -17,13 +18,17 @@ function Rodagem(){
 
     useEffect(() => {
         fetch('http://127.0.0.1:8000/veiculos/')
-        .then(resposta => resposta.json())
-        .then(dados => setVeiculos(dados))
+            .then(resposta => resposta.json())
+            .then(dados => setVeiculos(dados))
+
+        fetch('http://127.0.0.1:8000/abastecimentos/')
+            .then(resposta => resposta.json())
+            .then(dados => setAbastecimentos(dados))
 
         if (telaInterna === 'lista') {
             fetch('http://127.0.0.1:8000/rodagens/')
-            .then(resposta => resposta.json())
-            .then(dados => setRodagens(dados))
+                .then(resposta => resposta.json())
+                .then(dados => setRodagens(dados))
         }
     }, [telaInterna])
 
@@ -94,57 +99,98 @@ function Rodagem(){
         }
     }
 
-    function obterVeiculo(id) {
-        return veiculos.find(v => v.id === id)
-    }
-
     return (
         <div>
             {telaInterna === 'lista' ? (
                 <div>
                     <h2>Registro de Rodagem e Consumo (Frota)</h2>
                     <button onClick={FormularioNovaRodagem}>+ Registrar Rodagem</button>
+                    <br /><br />
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Veículo</th>
-                                <th>Período / Semana</th>
-                                <th>Datas</th>
-                                <th>KM Rodado</th>
-                                <th>Média (KM/L)</th>
-                                <th>Litros Consumidos</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {rodagens.map((item) => {
-                                const veiculo = obterVeiculo(item.veiculo_id)
-                                const media = veiculo?.km_por_litro
-                                const litrosConsumidos = (media && media > 0) 
-                                    ? (item.km_rodado / media).toFixed(2) 
-                                    : '---'
+                    {/* AGRUPAMENTO NATIVO POR VEÍCULO */}
+                    {veiculos.map(veiculo => {
+                        const rodagensDoVeiculo = rodagens.filter(r => r.veiculo_id === veiculo.id)
+                        const media = veiculo.km_por_litro || 0
 
-                                return (
-                                    <tr key={item.id}>
-                                        <td>{veiculo ? `${veiculo.marca} ${veiculo.modelo}` : `Veículo #${item.veiculo_id}`}</td>
-                                        <td>{item.semana || '---'}</td>
-                                        <td>
-                                            {item.data_inicio && item.data_fim 
-                                                ? `${item.data_inicio.split('-').reverse().join('/')} a ${item.data_fim.split('-').reverse().join('/')}`
-                                                : '---'}
-                                        </td>
-                                        <td>{item.km_rodado ? `${item.km_rodado} km` : '0 km'}</td>
-                                        <td>{media ? `${media} km/l` : '---'}</td>
-                                        <td>{litrosConsumidos !== '---' ? `${litrosConsumidos} L` : '---'}</td>
-                                        <td>
-                                            <button onClick={() => FormularioEditarRodagem(item)}>Editar</button>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
+                        const abastVeiculo = abastecimentos.filter(a => a.veiculo_id === veiculo.id && a.valor && a.litros)
+                        const totalValorAbast = abastVeiculo.reduce((soma, a) => soma + Number(a.valor), 0)
+                        const totalLitrosAbast = abastVeiculo.reduce((soma, a) => soma + Number(a.litros), 0)
+                        const pmComb = totalLitrosAbast > 0 ? (totalValorAbast / totalLitrosAbast) : 0
+
+                        let totalKm = 0
+                        let totalLitros = 0
+                        let totalCusto = 0
+
+                        return (
+                            <div key={veiculo.id}>
+                                <h3>
+                                    {veiculo.marca} {veiculo.modelo} 
+                                    | Autonomia: {media > 0 ? `${media} km/l` : '---'} 
+                                    | PMC: {pmComb > 0 ? `R$ ${pmComb.toFixed(2).replace('.', ',')}` : '---'}
+                                </h3>
+
+                                {rodagensDoVeiculo.length === 0 ? (
+                                    <p><em>Nenhuma rodagem registrada para este veículo.</em></p>
+                                ) : (
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Período / Semana</th>
+                                                <th>Datas</th>
+                                                <th>KM Rodado</th>
+                                                <th>Litros Consumidos</th>
+                                                <th>Custo Semanal (R$)</th>
+                                                <th>Custo / KM</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {rodagensDoVeiculo.map(item => {
+                                                const km = item.km_rodado || 0
+                                                const litros = media > 0 ? (km / media) : 0
+                                                const custo = (litros > 0 && pmComb > 0) ? (litros * pmComb) : 0
+                                                const custoKm = km > 0 && custo > 0 ? (custo / km) : 0
+
+                                                totalKm += km
+                                                totalLitros += litros
+                                                totalCusto += custo
+
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td>{item.semana || '---'}</td>
+                                                        <td>
+                                                            {item.data_inicio && item.data_fim 
+                                                                ? `${item.data_inicio.split('-').reverse().join('/')} a ${item.data_fim.split('-').reverse().join('/')}`
+                                                                : '---'}
+                                                        </td>
+                                                        <td>{km ? `${km} km` : '0 km'}</td>
+                                                        <td>{litros > 0 ? `${litros.toFixed(2)} L` : '---'}</td>
+                                                        <td>{custo > 0 ? `R$ ${custo.toFixed(2).replace('.', ',')}` : '---'}</td>
+                                                        <td>{custoKm > 0 ? `R$ ${custoKm.toFixed(2).replace('.', ',')}` : '---'}</td>
+                                                        <td>
+                                                            <button onClick={() => FormularioEditarRodagem(item)}>Editar</button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>TOTAL / MÉDIA DO VEÍCULO</strong></td>
+                                                <td>---</td>
+                                                <td><strong>{totalKm.toFixed(1)} km</strong></td>
+                                                <td><strong>{totalLitros.toFixed(2)} L</strong></td>
+                                                <td><strong>R$ {totalCusto.toFixed(2).replace('.', ',')}</strong></td>
+                                                <td><strong>R$ {totalKm > 0 ? (totalCusto / totalKm).toFixed(2).replace('.', ',') : '0,00'} / km</strong></td>
+                                                <td>---</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                )}
+                                <hr />
+                            </div>
+                        )
+                    })}
                 </div>
             ) : (
                 <div>
