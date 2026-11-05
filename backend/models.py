@@ -27,6 +27,7 @@ class Veiculo(Base):
     modelo = Column(String, nullable=False)
     ano = Column(Integer, nullable=True)
     status = Column(String, default="Ativo", nullable=False)
+    km_por_litro = Column(Float, nullable=True)
 
 class Ciclo(Base):
     __tablename__ = "ciclos"
@@ -139,3 +140,16 @@ class Provento(Base):
     observacoes = Column(String, nullable=True)
 
     funcionario = relationship("Funcionario")
+
+class Rodagem(Base):
+    __tablename__ = "rodagem"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    veiculo_id = Column(Integer, ForeignKey("veiculos.id"), nullable=False)
+    semana = Column(String, nullable=True)
+    data_inicio = Column(String, nullable=True)
+    data_fim = Column(String, nullable=True)
+    km_rodado = Column(Float, nullable=False)
+    observacao = Column(String, nullable=True)
+
+    veiculo = relationship("Veiculo")
