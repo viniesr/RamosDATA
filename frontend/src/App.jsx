@@ -8,7 +8,7 @@ import Manutencoes from './pages/Manutencoes';
 import Infracoes from './pages/Infracoes';
 import Proventos from './pages/Proventos';
 import Romaneios from './pages/Romaneios';
-
+import Rodagem from './pages/Rodagem';
 
 function App() {
   const [telaAtual, setTelaAtual] = useState('funcionarios')
@@ -40,6 +40,9 @@ function App() {
 
     if (telaAtual == 'abastecimentos'){
       return <Abastecimentos/>
+    }
+    if (telaAtual == 'rodagem'){
+      return <Rodagem/>
     }
     if (telaAtual == 'manutencoes'){
       return <Manutencoes/>

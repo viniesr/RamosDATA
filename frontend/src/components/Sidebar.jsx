@@ -22,7 +22,7 @@ function Sidebar({ navegarPara }) {
         <ul>
           <li><button onClick={() => navegarPara('veiculos')}>Veículos</button></li>
           <li><button onClick={() => navegarPara('abastecimentos')}>Abastecimentos</button></li>
-          <li><button onClick={() => navegarPara('rodagem')}>Rodagem</button></li>
+          <li><button onClick={() => navegarPara('rodagem')}>Rodagem e Consumo</button></li>
           <li><button onClick={() => navegarPara('manutencoes')}>Manutenções</button></li>
           <li><button onClick={() => navegarPara('infracoes')}>Infrações</button></li>
         </ul>
