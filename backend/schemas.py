@@ -35,6 +35,7 @@ class VeiculoBase(BaseModel):
     modelo: str
     ano: Optional[int] = None
     status: str = "Ativo"
+    km_por_litro: Optional[float] = None
 
 class VeiculoCreate(VeiculoBase):
     pass
@@ -174,5 +175,19 @@ class ProventoCreate(BaseModel):
 
 class ProventoResponse(ProventoCreate):
     id: int
+    class Config:
+        from_attributes = True
+
+class RodagemCreate(BaseModel):
+    veiculo_id: int
+    semana: Optional[str] = None
+    data_inicio: Optional[str] = None
+    data_fim: Optional[str] = None
+    km_rodado: float
+    observacao: Optional[str] = None
+
+class RodagemResponse(RodagemCreate):
+    id: int
+
     class Config:
         from_attributes = True
