@@ -391,3 +391,27 @@ def deletar_provento(provento_id: int, db: Session = Depends(get_db)):
     if not sucesso:
         raise HTTPException(status_code=404, detail="Provento não encontrado")
     return {"mensagem": "Provento removido com sucesso"}
+
+# MÉTODOS - RODAGEM
+
+@app.post("/rodagens/", response_model=schemas.RodagemResponse)
+def criar_rodagem(rodagem: schemas.RodagemCreate, db: Session = Depends(get_db)):
+    return crud.create_rodagem(db=db, rodagem=rodagem)
+
+@app.get("/rodagens/", response_model=List[schemas.RodagemResponse])
+def listar_rodagens(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_rodagens(db=db, skip=skip, limit=limit)
+
+@app.put("/rodagens/{rodagem_id}", response_model=schemas.RodagemResponse)
+def atualizar_rodagem(rodagem_id: int, dados: schemas.RodagemCreate, db: Session = Depends(get_db)):
+    rodagem_atualizada = crud.update_rodagem(db=db, rodagem_id=rodagem_id, updating_rodagem=dados)
+    if not rodagem_atualizada:
+        raise HTTPException(status_code=404, detail="Registro de rodagem não encontrado")
+    return rodagem_atualizada
+
+@app.delete("/rodagens/{rodagem_id}")
+def deletar_rodagem(rodagem_id: int, db: Session = Depends(get_db)):
+    sucesso = crud.delete_rodagem(db=db, rodagem_id=rodagem_id)
+    if not sucesso:
+        raise HTTPException(status_code=404, detail="Registro de rodagem não encontrado")
+    return {"mensagem": "Registro de rodagem removido com sucesso"}
