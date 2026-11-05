@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react"
 
 function Abastecimentos() {
-    // Controla se vemos a lista ou o formulário
     const [telaInterna, setTelaInterna] = useState('lista')
 
-    // Listas que vêm do banco de dados
     const [abastecimentos, setAbastecimentos] = useState([])
     const [veiculos, setVeiculos] = useState([])
 
-    // Estados para cada caixinha do formulário
     const [veiculoId, setVeiculoId] = useState('')
-    const [data, setData] = useState(new Date().toISOString().split('T')[0]) // Já vem com a data de HOJE
+    const [data, setData] = useState(new Date().toISOString().split('T')[0])
     const [km, setKm] = useState('')
     const [tipoCombustivel, setTipoCombustivel] = useState('Diesel')
     const [valor, setValor] = useState('')
@@ -18,12 +15,10 @@ function Abastecimentos() {
     const [idEditando, setIdEditando] = useState(null)
 
     useEffect(() => {
-        // Puxa a lista de veículos cadastrados no backend
         fetch('http://127.0.0.1:8000/veiculos/')
             .then((resposta) => resposta.json())
             .then((dados) => setVeiculos(dados))
 
-        // Puxa a lista de abastecimentos cadastrados no backend
         fetch('http://127.0.0.1:8000/abastecimentos/')
             .then((resposta) => resposta.json())
             .then((dados) => setAbastecimentos(dados))
@@ -33,7 +28,7 @@ function Abastecimentos() {
         setVeiculoId('')
         setData(new Date().toISOString().split('T')[0])
         setKm('')
-        setTipoCombustivel('')
+        setTipoCombustivel('Diesel')
         setValor('')
         setLitros('')
         setIdEditando(null)
@@ -44,7 +39,7 @@ function Abastecimentos() {
         setVeiculoId(abastecimento.veiculo_id)
         setData(abastecimento.data || '')
         setKm(abastecimento.km ?? '')
-        setTipoCombustivel(abastecimento.tipo_combustivel || '')
+        setTipoCombustivel(abastecimento.tipo_combustivel || 'Diesel')
         setValor(abastecimento.valor ?? '')
         setLitros(abastecimento.litros ?? '')
         setIdEditando(abastecimento.id)
@@ -68,13 +63,13 @@ function Abastecimentos() {
                 method: 'PUT',
                 headers: {'Content-Type' : 'application/json'},
                 body: JSON.stringify(pacote)
-            }) .then(() => setTelaInterna('lista'))
+            }).then(() => setTelaInterna('lista'))
         } else {
             fetch('http://127.0.0.1:8000/abastecimentos/', {
                 method: 'POST',
                 headers: {'Content-Type' : 'application/json'},
                 body: JSON.stringify(pacote)
-            }) .then(() => setTelaInterna('lista'))
+            }).then(() => setTelaInterna('lista'))
         }
     }
 
@@ -87,83 +82,92 @@ function Abastecimentos() {
         }
     }
 
-    function obterNomeVeiculo(id) {
-        const veiculo = veiculos.find((veiculo) => veiculo.id === id)
-        return veiculo ? veiculo.modelo : `Veículo #${id}`
-    }
-
     return (
         <div>
             {telaInterna === 'lista' ? (
                 <div>
                     <h2>Lista de Abastecimentos</h2>
                     <button onClick={FormularioNovoAbastecimento}>+ Registrar Abastecimento</button>
+                    <br /><br />
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Veículo</th>
-                                <th>Km</th>
-                                <th>Data</th>
-                                <th>Combustível</th>
-                                <th>Valor</th>
-                                <th>Litros</th>
-                                <th>R$ / L</th> {/* <- Nova Coluna */}
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
+                    {/* AGRUPAMENTO POR VEÍCULO */}
+                    {veiculos.map(veiculo => {
+                        const abastDoVeiculo = abastecimentos.filter(a => a.veiculo_id === veiculo.id)
+                        
+                        let totalValor = 0
+                        let totalLitros = 0
 
-                        <tbody>
-                            {abastecimentos.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{obterNomeVeiculo(item.veiculo_id)}</td>
-                                    <td>{item.km !== null ? item.km : '-'}</td>
-                                    
-                                    {/* Formata 'AAAA-MM-DD' para 'DD/MM/AAAA' */}
-                                    <td>
-                                        {item.data ? item.data.split('-').reverse().join('/') : '-'}
-                                    </td>
+                        return (
+                            <div key={veiculo.id}>
+                                <h3>{veiculo.marca} {veiculo.modelo}</h3>
 
-                                    <td>{item.tipo_combustivel}</td>
+                                {abastDoVeiculo.length === 0 ? (
+                                    <p><em>Nenhum abastecimento registrado para este veículo.</em></p>
+                                ) : (
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Km</th>
+                                                <th>Combustível</th>
+                                                <th>Valor Total</th>
+                                                <th>Litros</th>
+                                                <th>R$ / L</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {abastDoVeiculo.map((item) => {
+                                                const v = item.valor ? Number(item.valor) : 0
+                                                const l = item.litros ? Number(item.litros) : 0
+                                                totalValor += v
+                                                totalLitros += l
 
-                                    {/* Formata de 250 para R$ 250,00 e 91.58 para R$ 91,58 */}
-                                    <td>
-                                        {item.valor !== null 
-                                            ? `R$ ${Number(item.valor).toFixed(2).replace('.', ',')}` 
-                                            : '-'}
-                                    </td>
-
-                                    <td>{item.litros !== null ? `${item.litros} L` : '-'}</td>
-
-                                    {/* Preço por litro com 2 casas decimais e vírgula */}
-                                    <td>
-                                        {item.valor && item.litros 
-                                            ? `R$ ${(item.valor / item.litros).toFixed(2).replace('.', ',')}` 
-                                            : '-'}
-                                    </td>
-
-                                    <td>
-                                        <button onClick={() => FormularioEditarAbastecimento(item)}>Editar</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td>{item.data ? item.data.split('-').reverse().join('/') : '-'}</td>
+                                                        <td>{item.km !== null ? item.km : '-'}</td>
+                                                        <td>{item.tipo_combustivel}</td>
+                                                        <td>{item.valor !== null ? `R$ ${v.toFixed(2).replace('.', ',')}` : '-'}</td>
+                                                        <td>{item.litros !== null ? `${l} L` : '-'}</td>
+                                                        <td>{v > 0 && l > 0 ? `R$ ${(v / l).toFixed(2).replace('.', ',')}` : '-'}</td>
+                                                        <td>
+                                                            <button onClick={() => FormularioEditarAbastecimento(item)}>Editar</button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>TOTAL DO VEÍCULO</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td><strong>R$ {totalValor.toFixed(2).replace('.', ',')}</strong></td>
+                                                <td><strong>{totalLitros.toFixed(2)} L</strong></td>
+                                                <td><strong>R$ {totalLitros > 0 ? (totalValor / totalLitros).toFixed(2).replace('.', ',') : '0,00'} / L</strong></td>
+                                                <td>---</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                )}
+                                <hr />
+                            </div>
+                        )
+                    })}
                 </div>
-
             ) : (
                 <div>
                     <h2>{idEditando ? 'Editando Abastecimento' : 'Novo Abastecimento'}</h2>
 
                     <form onSubmit={salvarAbastecimento}>
-
                         <div>
                             <label>Veículo: </label>
                             <select value={veiculoId} onChange={(evento) => setVeiculoId(evento.target.value)} required>
                                 <option value="">-- Selecione o Veículo --</option>
                                 {veiculos.map((veiculo) => (
                                     <option key={veiculo.id} value={veiculo.id}>
-                                        {veiculo.modelo} - {veiculo.placa || 'Sem Placa'}
+                                        {veiculo.marca} {veiculo.modelo}
                                     </option>
                                 ))}
                             </select>
@@ -225,8 +229,6 @@ function Abastecimentos() {
                             />
                         </div>
 
-                        {/* Os próximos campos vão entrar aqui */}
-
                         <br />
                         <button type="submit">{idEditando ? 'Salvar Alterações' : 'Cadastrar'}</button>
                         
@@ -235,7 +237,6 @@ function Abastecimentos() {
                         )}
 
                         <button type="button" onClick={() => setTelaInterna('lista')}>Cancelar</button>
-
                     </form>
                 </div>
             )}
