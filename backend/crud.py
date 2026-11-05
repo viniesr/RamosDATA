@@ -93,7 +93,8 @@ def create_veiculo(db: Session, veiculo: schemas.VeiculoCreate):
         marca=veiculo.marca,
         modelo=veiculo.modelo,
         ano=veiculo.ano,
-        status=veiculo.status
+        status=veiculo.status,
+        km_por_litro=veiculo.km_por_litro
     )
 
     db.add(db_veiculo)
@@ -118,6 +119,7 @@ def update_veiculo(db:Session, veiculo_id: int, updating_veiculo:schemas.Veiculo
     db_veiculo.modelo = updating_veiculo.modelo
     db_veiculo.ano = updating_veiculo.ano
     db_veiculo.status = updating_veiculo.status
+    db_veiculo.km_por_litro = updating_veiculo.km_por_litro
 
     db.commit()
     db.refresh(db_veiculo)

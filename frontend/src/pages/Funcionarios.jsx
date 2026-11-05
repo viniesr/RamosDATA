@@ -108,7 +108,6 @@ function Funcionarios(){
           placeholder="CPF" 
           value={cpf} 
           onChange={(evento) => setCpf(evento.target.value)} 
-          required
         />
         </div>
 
