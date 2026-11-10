@@ -11,7 +11,7 @@ function Proventos() {
     const [tipo, setTipo] = useState('Fechamento')
     const [dataPagamento, setDataPagamento] = useState(new Date().toISOString().split('T')[0])
     
-    // Período agora dividido em Data Início e Data Fim
+    // Período dividido em Data Início e Data Fim
     const [dataInicio, setDataInicio] = useState('')
     const [dataFim, setDataFim] = useState('')
 
@@ -28,9 +28,11 @@ function Proventos() {
             .then((res) => res.json())
             .then((dados) => setFuncionarios(dados))
 
-        fetch('http://127.0.0.1:8000/proventos/')
-            .then((res) => res.json())
-            .then((dados) => setProventos(dados))
+        if (telaInterna === 'lista') {
+            fetch('http://127.0.0.1:8000/proventos/')
+                .then((res) => res.json())
+                .then((dados) => setProventos(dados))
+        }
     }, [telaInterna])
 
     function FormularioNovoProvento() {
@@ -53,11 +55,9 @@ function Proventos() {
         setTipo(item.tipo || 'Fechamento')
         setDataPagamento(item.data_pagamento || '')
 
-        // Se o período estiver salvo no formato "DD/MM/AAAA a DD/MM/AAAA", resgata para os inputs
         if (item.periodo && item.periodo.includes(' a ')) {
             const partes = item.periodo.split(' a ')
             
-            // Converte DD/MM/AAAA de volta para AAAA-MM-DD para o input HTML type="date"
             const converterParaInputDate = (dataBR) => {
                 const p = dataBR.split('/')
                 return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : ''
@@ -106,7 +106,6 @@ function Proventos() {
             }
         }
 
-        // Formata o período de AAAA-MM-DD para DD/MM/AAAA e junta as duas datas
         let periodoFormatado = null
         if (dataInicio && dataFim) {
             const inicioBR = dataInicio.split('-').reverse().join('/')
@@ -160,62 +159,96 @@ function Proventos() {
                 <div>
                     <h2>Proventos e Pagamentos (RH)</h2>
                     <button onClick={FormularioNovoProvento}>+ Registrar Pagamento / Vale</button>
+                    <br /><br />
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nº</th>
-                                <th>Funcionário</th>
-                                <th>Tipo</th>
-                                <th>Data Pagamento</th>
-                                <th>Período Referente</th>
-                                <th>Meio</th>
-                                <th>Valor</th>
-                                <th>Comprovante</th>
-                                <th>Observações</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {proventos.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{String(item.id).padStart(3, '0')}</td>
-                                    <td>{obterNomeFuncionario(item.funcionario_id)}</td>
-                                    <td>{item.tipo}</td>
-                                    <td>
-                                        {item.data_pagamento 
-                                            ? item.data_pagamento.split('-').reverse().join('/') 
-                                            : '-'}
-                                    </td>
-                                    <td>{item.periodo || '-'}</td>
-                                    <td>{item.meio || '-'}</td>
-                                    <td>
-                                        {item.valor !== null 
-                                            ? `R$ ${Number(item.valor).toFixed(2).replace('.', ',')}` 
-                                            : '-'}
-                                    </td>
-                                    <td>
-                                        {item.comprovante ? (
-                                            <a 
-                                                href={`http://127.0.0.1:8000/${item.comprovante}`} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                            >
-                                                📎 Ver Comprovante
-                                            </a>
-                                        ) : (
-                                            '-'
-                                        )}
-                                    </td>
-                                    <td>{item.observacoes || '-'}</td>
-                                    <td>
-                                        <button onClick={() => FormularioEditarProvento(item)}>Editar</button>
-                                        <button onClick={() => deletarProvento(item)}>Excluir</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {/* AGRUPAMENTO POR FUNCIONÁRIO */}
+                    {funcionarios.map((func) => {
+                        const proventosDoFunc = proventos.filter((p) => p.funcionario_id === func.id)
+                        let totalValor = 0
+
+                        return (
+                            <div key={func.id}>
+                                <h3>👤 {func.nome}</h3>
+
+                                {proventosDoFunc.length === 0 ? (
+                                    <p><em>Nenhum pagamento ou provento registrado para este funcionário.</em></p>
+                                ) : (
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Nº</th>
+                                                <th>Tipo</th>
+                                                <th>Data Pagamento</th>
+                                                <th>Período Referente</th>
+                                                <th>Meio</th>
+                                                <th>Valor</th>
+                                                <th>Comprovante</th>
+                                                <th>Observações</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {proventosDoFunc.map((item) => {
+                                                const v = item.valor ? Number(item.valor) : 0
+                                                totalValor += v
+
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td>{String(item.id).padStart(3, '0')}</td>
+                                                        <td>{item.tipo}</td>
+                                                        <td>
+                                                            {item.data_pagamento 
+                                                                ? item.data_pagamento.split('-').reverse().join('/') 
+                                                                : '-'}
+                                                        </td>
+                                                        <td>{item.periodo || '-'}</td>
+                                                        <td>{item.meio || '-'}</td>
+                                                        <td>
+                                                            {item.valor !== null 
+                                                                ? `R$ ${v.toFixed(2).replace('.', ',')}` 
+                                                                : '-'}
+                                                        </td>
+                                                        <td>
+                                                            {item.comprovante ? (
+                                                                <a 
+                                                                    href={`http://127.0.0.1:8000/${item.comprovante}`} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                >
+                                                                    📎 Ver Comprovante
+                                                                </a>
+                                                            ) : (
+                                                                '-'
+                                                            )}
+                                                        </td>
+                                                        <td>{item.observacoes || '-'}</td>
+                                                        <td>
+                                                            <button onClick={() => FormularioEditarProvento(item)}>Editar</button>
+                                                            <button onClick={() => deletarProvento(item)}>Excluir</button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>TOTAL DO FUNCIONÁRIO</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td><strong>R$ {totalValor.toFixed(2).replace('.', ',')}</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                )}
+                                <hr />
+                            </div>
+                        )
+                    })}
                 </div>
             ) : (
                 <div>
@@ -262,7 +295,6 @@ function Proventos() {
                             />
                         </div>
 
-                        {/* DOIS SELETORES DE DATA PARA O PERÍODO */}
                         <div>
                             <label>Período - Data Início: </label>
                             <input
