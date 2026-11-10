@@ -22,20 +22,19 @@ function Infracoes() {
     const [idEditando, setIdEditando] = useState(null)
 
     useEffect(() => {
-        // Puxa veículos
         fetch('http://127.0.0.1:8000/veiculos/')
             .then((res) => res.json())
             .then((dados) => setVeiculos(dados))
 
-        // Puxa funcionários
         fetch('http://127.0.0.1:8000/funcionarios/')
             .then((res) => res.json())
             .then((dados) => setFuncionarios(dados))
 
-        // Puxa infrações
-        fetch('http://127.0.0.1:8000/infracoes/')
-            .then((res) => res.json())
-            .then((dados) => setInfracoes(dados))
+        if (telaInterna === 'lista') {
+            fetch('http://127.0.0.1:8000/infracoes/')
+                .then((res) => res.json())
+                .then((dados) => setInfracoes(dados))
+        }
     }, [telaInterna])
 
     function FormularioNovaInfracao() {
@@ -70,7 +69,7 @@ function Infracoes() {
 
     function obterNomeVeiculo(id) {
         const v = veiculos.find((item) => item.id === id)
-        return v ? `${v.modelo} - ${v.placa || 'Sem Placa'}` : `Veículo #${id}`
+        return v ? (v.marca ? `${v.marca} ${v.modelo}` : v.modelo) : `Veículo #${id}`
     }
 
     function obterNomeFuncionario(id) {
@@ -130,7 +129,6 @@ function Infracoes() {
             })
         }
     }
-    
 
     return (
         <div>
@@ -138,53 +136,92 @@ function Infracoes() {
                 <div>
                     <h2>Registro de Infrações da Frota</h2>
                     <button onClick={FormularioNovaInfracao}>+ Cadastrar Infração</button>
+                    <br /><br />
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nº</th>
-                                <th>Veículo</th>
-                                <th>Infração</th>
-                                <th>Pts</th>
-                                <th>Gravidade</th>
-                                <th>Data/Hora</th>
-                                <th>Local</th>
-                                <th>Motorista</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                                <th>Transf.?</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {infracoes.map((item) => (
-                                <tr key={item.id}>
-                                    <td>{String(item.id).padStart(3, '0')}</td>
-                                    <td>{obterNomeVeiculo(item.veiculo_id)}</td>
-                                    <td>{item.infracao}</td>
-                                    <td>{item.pts ?? '-'}</td>
-                                    <td>{obterGravidade(item.pts)}</td>
-                                    <td>
-                                        {item.data ? item.data.split('-').reverse().join('/') : '-'}
-                                        {item.hora ? ` ${item.hora}` : ''}
-                                    </td>
-                                    <td>{item.local || '-'}</td>
-                                    <td>{obterNomeFuncionario(item.funcionario_id)}</td>
-                                    <td>
-                                        {item.valor !== null 
-                                            ? `R$ ${Number(item.valor).toFixed(2).replace('.', ',')}` 
-                                            : '-'}
-                                    </td>
-                                    <td>{item.status}</td>
-                                    <td>{item.transferida}</td>
-                                    <td>
-                                        <button onClick={() => FormularioEditarInfracao(item)}>Editar</button>
-                                        <button onClick={() => deletarInfracao(item)}>Excluir</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                    {/* AGRUPAMENTO POR VEÍCULO */}
+                    {veiculos.map((veiculo) => {
+                        const infracoesDoVeiculo = infracoes.filter((i) => i.veiculo_id === veiculo.id)
+                        let totalPontos = 0
+                        let totalValor = 0
+
+                        return (
+                            <div key={veiculo.id}>
+                                <h3>{veiculo.marca ? `${veiculo.marca} ${veiculo.modelo}` : veiculo.modelo}</h3>
+
+                                {infracoesDoVeiculo.length === 0 ? (
+                                    <p><em>Nenhuma infração registrada para este veículo.</em></p>
+                                ) : (
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Nº</th>
+                                                <th>Infração</th>
+                                                <th>Pts</th>
+                                                <th>Gravidade</th>
+                                                <th>Data/Hora</th>
+                                                <th>Local</th>
+                                                <th>Motorista</th>
+                                                <th>Valor</th>
+                                                <th>Status</th>
+                                                <th>Transf.?</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {infracoesDoVeiculo.map((item) => {
+                                                const p = item.pts ? Number(item.pts) : 0
+                                                const v = item.valor ? Number(item.valor) : 0
+                                                totalPontos += p
+                                                totalValor += v
+
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td>{String(item.id).padStart(3, '0')}</td>
+                                                        <td>{item.infracao}</td>
+                                                        <td>{item.pts ?? '-'}</td>
+                                                        <td>{obterGravidade(item.pts)}</td>
+                                                        <td>
+                                                            {item.data ? item.data.split('-').reverse().join('/') : '-'}
+                                                            {item.hora ? ` ${item.hora}` : ''}
+                                                        </td>
+                                                        <td>{item.local || '-'}</td>
+                                                        <td>{obterNomeFuncionario(item.funcionario_id)}</td>
+                                                        <td>
+                                                            {item.valor !== null 
+                                                                ? `R$ ${v.toFixed(2).replace('.', ',')}` 
+                                                                : '-'}
+                                                        </td>
+                                                        <td>{item.status}</td>
+                                                        <td>{item.transferida}</td>
+                                                        <td>
+                                                            <button onClick={() => FormularioEditarInfracao(item)}>Editar</button>
+                                                            <button onClick={() => deletarInfracao(item)}>Excluir</button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td><strong>TOTAL DO VEÍCULO</strong></td>
+                                                <td>---</td>
+                                                <td><strong>{totalPontos} pts</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td><strong>R$ {totalValor.toFixed(2).replace('.', ',')}</strong></td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                                <td>---</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                )}
+                                <hr />
+                            </div>
+                        )
+                    })}
                 </div>
             ) : (
                 <div>
