@@ -9,6 +9,7 @@ import Infracoes from './pages/Infracoes';
 import Proventos from './pages/Proventos';
 import Romaneios from './pages/Romaneios';
 import Rodagem from './pages/Rodagem';
+import Home from './pages/Home';
 
 function App() {
   const [telaAtual, setTelaAtual] = useState('funcionarios')
@@ -21,15 +22,15 @@ function App() {
     if (telaAtual === 'listarFuncionario') {
       return <ListarFuncionarios navegarPara={navegarPara} />
     }
-    
     if (telaAtual === 'cadastrarFuncionario') {
       return <CadastrarFuncionario navegarPara={navegarPara} funcionarioEditando={funcionarioEditando} />
     } 
-    
+    if (telaAtual === 'home'){
+      return <Home/>
+    }
     if (telaAtual === 'veiculos'){
       return <Veiculos/>
     }
-
     if (telaAtual == 'vendedores'){
       return <Vendedores/>
     }
@@ -37,7 +38,6 @@ function App() {
     if (telaAtual == 'funcionarios'){
       return <Funcionarios/>
     }
-
     if (telaAtual == 'abastecimentos'){
       return <Abastecimentos/>
     }

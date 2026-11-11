@@ -168,7 +168,7 @@ function Proventos() {
 
                         return (
                             <div key={func.id}>
-                                <h3>👤 {func.nome}</h3>
+                                <h3>{func.nome}</h3>
 
                                 {proventosDoFunc.length === 0 ? (
                                     <p><em>Nenhum pagamento ou provento registrado para este funcionário.</em></p>
