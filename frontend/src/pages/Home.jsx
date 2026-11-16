@@ -51,11 +51,38 @@ function Home() {
     const custoTotalFrota = totalAbastecimentos + totalManutencoes
 
     return (
+    <div>
+        <h2>Visão Geral da Operação (Dashboard)</h2>
+
         <div>
-            <h2>Visão Geral da Operação (Dashboard)</h2>
-            <p>Carregando dados da RamosDATA...</p>
+            <label>Escolha o Mês/Ano: </label>
+            <input 
+                type="month" 
+                value={mesSelecionado} 
+                onChange={(evento) => setMesSelecionado(evento.target.value)} 
+            />
         </div>
-    )
+
+        <br />
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Gasto com Combustível</th>
+                    <th>Gasto com Manutenção</th>
+                    <th>Custo Total da Frota</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>R$ {totalAbastecimentos.toFixed(2).replace('.', ',')}</td>
+                    <td>R$ {totalManutencoes.toFixed(2).replace('.', ',')}</td>
+                    <td><strong>R$ {custoTotalFrota.toFixed(2).replace('.', ',')}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+)
 }
 
 export default Home
