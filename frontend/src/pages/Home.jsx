@@ -118,6 +118,19 @@ function Home() {
     const infracoesPendentes = infracoes.filter((i) => i.status && i.status.toLowerCase() === 'pendente')
     const ciclosAbertos = ciclos.filter((c) => c.status === 'Aberto')
 
+    // 17. Percentual de cada categoria de despesa no mês
+    const percCombustivel = custoTotalGeral > 0 
+        ? ((totalAbastecimentos / custoTotalGeral) * 100).toFixed(1) 
+        : '0.0'
+
+    const percManutencao = custoTotalGeral > 0 
+        ? ((totalManutencoes / custoTotalGeral) * 100).toFixed(1) 
+        : '0.0'
+
+    const percProventos = custoTotalGeral > 0 
+        ? ((totalProventos / custoTotalGeral) * 100).toFixed(1) 
+        : '0.0'
+
     return (
         <div>
             <h2>Visão Geral da Operação (Dashboard)</h2>
@@ -166,7 +179,92 @@ function Home() {
                     <strong>Ciclos de Romaneio em Aberto:</strong> {ciclosAbertos.length} ciclo(s) aberto(s)
                 </li>
             </ul>
+
+            <hr />
+
+            <h3>3. Eficiência da Frota (Mês Selecionado)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Veículo</th>
+                        <th>Autonomia (Média)</th>
+                        <th>KM Rodado no Mês</th>
+                        <th>Litros Estimados</th>
+                        <th>Gasto Real no Posto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {veiculos.map((veiculo) => {
+                        // Pega as rodagens deste carro no mês filtrado
+                        const rodagensDoCarro = rodagensFiltradas.filter((r) => r.veiculo_id === veiculo.id)
+                        
+                        let kmCarro = 0
+                        rodagensDoCarro.forEach((r) => {
+                            kmCarro = kmCarro + Number(r.km_rodado || 0)
+                        })
+
+                        // Calcula litros estimados usando a autonomia cadastrada no veículo
+                        const media = Number(veiculo.km_por_litro || 0)
+                        const litrosEstimados = media > 0 ? (kmCarro / media) : 0
+
+                        // Pega o quanto foi pago de combustível para este carro no mês filtrado
+                        const abastDoCarro = abastecimentosFiltrados.filter((a) => a.veiculo_id === veiculo.id)
+                        let gastoPostoCarro = 0
+                        abastDoCarro.forEach((a) => {
+                            gastoPostoCarro = gastoPostoCarro + Number(a.valor || 0)
+                        })
+
+                        return (
+                            <tr key={veiculo.id}>
+                                <td><strong>{veiculo.marca} {veiculo.modelo}</strong></td>
+                                <td>{media > 0 ? `${media} km/l` : '---'}</td>
+                                <td>{kmCarro.toFixed(1)} km</td>
+                                <td>{litrosEstimados > 0 ? `${litrosEstimados.toFixed(2)} L` : '---'}</td>
+                                <td>R$ {gastoPostoCarro.toFixed(2).replace('.', ',')}</td>
+                            </tr>
+                        )
+                    })}
+                </tbody>
+            </table>
+
+            <hr />
+
+            <h3>4. Distribuição de Despesas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Valor Gasto</th>
+                        <th>Participação (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Combustível (Abastecimentos)</td>
+                        <td>R$ {totalAbastecimentos.toFixed(2).replace('.', ',')}</td>
+                        <td>{percCombustivel}%</td>
+                    </tr>
+                    <tr>
+                        <td>Oficina / Peças (Manutenções)</td>
+                        <td>R$ {totalManutencoes.toFixed(2).replace('.', ',')}</td>
+                        <td>{percManutencao}%</td>
+                    </tr>
+                    <tr>
+                        <td>Mão de Obra / RH (Proventos)</td>
+                        <td>R$ {totalProventos.toFixed(2).replace('.', ',')}</td>
+                        <td>{percProventos}%</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td><strong>TOTAL DE DESPESAS</strong></td>
+                        <td><strong>R$ {custoTotalGeral.toFixed(2).replace('.', ',')}</strong></td>
+                        <td><strong>{custoTotalGeral > 0 ? '100.0%' : '0.0%'}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
+        
     )
 }
 
