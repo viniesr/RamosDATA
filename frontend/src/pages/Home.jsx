@@ -21,6 +21,35 @@ function Home() {
         fetch('http://127.0.0.1:8000/rodagens/').then(r => r.json()).then(d => setRodagens(d))
     }, [])
 
+    const [mesSelecionado, setMesSelecionado] = useState('2026-11')
+
+        // 1. Pega apenas os abastecimentos onde a data começa com o mês escolhido (ex: "2026-11")
+    const abastecimentosFiltrados = abastecimentos.filter((item) => {
+        if (!item.data) return false
+        return item.data.startsWith(mesSelecionado)
+    })
+
+    // 2. Soma o valor de todos esses abastecimentos filtrados
+    let totalAbastecimentos = 0
+    abastecimentosFiltrados.forEach((item) => {
+        totalAbastecimentos = totalAbastecimentos + Number(item.valor || 0)
+    })
+
+    // 3. Pega apenas as manutenções do mês escolhido
+    const manutencoesFiltradas = manutencoes.filter((item) => {
+        if (!item.data) return false
+        return item.data.startsWith(mesSelecionado)
+    })
+
+    // 4. Soma o valor de todas essas manutenções filtradas
+    let totalManutencoes = 0
+    manutencoesFiltradas.forEach((item) => {
+        totalManutencoes = totalManutencoes + Number(item.valor || 0)
+    })
+
+    // 5. Junta os dois para ter o Custo Total da Frota no mês
+    const custoTotalFrota = totalAbastecimentos + totalManutencoes
+
     return (
         <div>
             <h2>Visão Geral da Operação (Dashboard)</h2>
