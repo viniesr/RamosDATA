@@ -14,6 +14,8 @@ function Abastecimentos() {
     const [litros, setLitros] = useState('')
     const [idEditando, setIdEditando] = useState(null)
 
+    const [mesSelecionado, setMesSelecionado] = useState('2026-11')
+
     useEffect(() => {
         fetch('http://127.0.0.1:8000/veiculos/')
             .then((resposta) => resposta.json())
@@ -90,9 +92,22 @@ function Abastecimentos() {
                     <button onClick={FormularioNovoAbastecimento}>+ Registrar Abastecimento</button>
                     <br /><br />
 
+                    <div>
+                    <label>Filtrar por Mês/Ano: </label>
+                    <input 
+                        type="month" 
+                        value={mesSelecionado} 
+                        onChange={(evento) => setMesSelecionado(evento.target.value)} 
+                    />
+                </div>
+
                     {/* AGRUPAMENTO POR VEÍCULO */}
                     {veiculos.map(veiculo => {
-                        const abastDoVeiculo = abastecimentos.filter(a => a.veiculo_id === veiculo.id)
+                        const abastecimentosDoVeiculo = abastecimentos.filter((abastecimento) => {
+                        const pertenceAoVeiculo = abastecimento.veiculo_id === veiculo.id
+                        const pertenceAoMes = abastecimento.data && abastecimento.data.startsWith(mesSelecionado)
+                        return pertenceAoVeiculo && pertenceAoMes
+                    })
                         
                         let totalValor = 0
                         let totalLitros = 0
@@ -101,7 +116,7 @@ function Abastecimentos() {
                             <div key={veiculo.id}>
                                 <h3>{veiculo.marca} {veiculo.modelo}</h3>
 
-                                {abastDoVeiculo.length === 0 ? (
+                                {abastecimentosDoVeiculo.length === 0 ? (
                                     <p><em>Nenhum abastecimento registrado para este veículo.</em></p>
                                 ) : (
                                     <table>
@@ -117,7 +132,7 @@ function Abastecimentos() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {abastDoVeiculo.map((item) => {
+                                            {abastecimentosDoVeiculo.map((item) => {
                                                 const v = item.valor ? Number(item.valor) : 0
                                                 const l = item.litros ? Number(item.litros) : 0
                                                 totalValor += v
