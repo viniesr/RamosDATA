@@ -23,6 +23,8 @@ function Proventos() {
     const [idEditando, setIdEditando] = useState(null)
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
 
+    const [mesSelecionado, setMesSelecionado] = useState('2026-11')
+
     useEffect(() => {
         fetch('http://127.0.0.1:8000/funcionarios/')
             .then((res) => res.json())
@@ -161,16 +163,29 @@ function Proventos() {
                     <button onClick={FormularioNovoProvento}>+ Registrar Pagamento / Vale</button>
                     <br /><br />
 
+                    <div>
+                    <label>Filtrar por Mês/Ano: </label>
+                    <input 
+                        type="month" 
+                        value={mesSelecionado} 
+                        onChange={(evento) => setMesSelecionado(evento.target.value)} 
+                    />
+                </div>
+
                     {/* AGRUPAMENTO POR FUNCIONÁRIO */}
                     {funcionarios.map((func) => {
-                        const proventosDoFunc = proventos.filter((p) => p.funcionario_id === func.id)
+                        const proventosDoFuncionario = proventos.filter((provento) => {
+                        const pertenceAoFuncionario = provento.funcionario_id === func.id
+                        const pertenceAoMes = provento.data_pagamento && provento.data_pagamento.startsWith(mesSelecionado)
+                        return pertenceAoFuncionario && pertenceAoMes
+                    })
                         let totalValor = 0
 
                         return (
                             <div key={func.id}>
                                 <h3>{func.nome}</h3>
 
-                                {proventosDoFunc.length === 0 ? (
+                                {proventosDoFuncionario.length === 0 ? (
                                     <p><em>Nenhum pagamento ou provento registrado para este funcionário.</em></p>
                                 ) : (
                                     <table>
@@ -188,7 +203,7 @@ function Proventos() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {proventosDoFunc.map((item) => {
+                                            {proventosDoFuncionario.map((item) => {
                                                 const v = item.valor ? Number(item.valor) : 0
                                                 totalValor += v
 
