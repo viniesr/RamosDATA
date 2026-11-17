@@ -19,6 +19,8 @@ function Manutencoes(){
 
     const [arquivoSelecionado, setArquivoSelecionado] = useState(null)
 
+    const [anoSelecionado, setAnoSelecionado] = useState('2026')
+
     useEffect(() => {
         fetch('http://127.0.0.1:8000/veiculos/')
             .then((resposta) => resposta.json())
@@ -127,10 +129,25 @@ function Manutencoes(){
                     <h2>Lista de Manutenções</h2>
                     <button onClick={FormularioNovaManutencao}>+ Registrar Manutenção</button>
                     <br /><br />
+                    <div>
+                    <label>Filtrar por Ano: </label>
+                    <select 
+                        value={anoSelecionado} 
+                        onChange={(evento) => setAnoSelecionado(evento.target.value)}
+                    >
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
 
                     {/* AGRUPAMENTO POR VEÍCULO */}
                     {veiculos.map(veiculo => {
-                        const manutencoesDoVeiculo = manutencoes.filter(m => m.veiculo_id === veiculo.id)
+                        const manutencoesDoVeiculo = manutencoes.filter((manutencao) => {
+                        const pertenceAoVeiculo = manutencao.veiculo_id === veiculo.id
+                        const pertenceAoAno = manutencao.data && manutencao.data.startsWith(anoSelecionado)
+                        return pertenceAoVeiculo && pertenceAoAno
+                    })
                         let totalValorManutencao = 0
 
                         return (
