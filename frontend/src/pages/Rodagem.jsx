@@ -16,6 +16,8 @@ function Rodagem(){
     const [observacao, setObservacao] = useState('')
     const [idEditando, setIdEditando] = useState(null)
 
+    const [mesSelecionado, setMesSelecionado] = useState('2026-11')
+
     useEffect(() => {
         fetch('http://127.0.0.1:8000/veiculos/')
             .then(resposta => resposta.json())
@@ -106,13 +108,30 @@ function Rodagem(){
                     <h2>Registro de Rodagem e Consumo (Frota)</h2>
                     <button onClick={FormularioNovaRodagem}>+ Registrar Rodagem</button>
                     <br /><br />
+                    <div>
+            <label>Filtrar por Mês/Ano: </label>
+            <input 
+                type="month" 
+                value={mesSelecionado} 
+                onChange={(evento) => setMesSelecionado(evento.target.value)} 
+                        />
+            </div>
 
                     {/* AGRUPAMENTO NATIVO POR VEÍCULO */}
                     {veiculos.map(veiculo => {
-                        const rodagensDoVeiculo = rodagens.filter(r => r.veiculo_id === veiculo.id)
+                        const rodagensDoVeiculo = rodagens.filter((rodagem) => {
+                        const pertenceAoVeiculo = rodagem.veiculo_id === veiculo.id
+                        const pertenceAoMes = rodagem.data_inicio && rodagem.data_inicio.startsWith(mesSelecionado)
+                        return pertenceAoVeiculo && pertenceAoMes
+                    })
                         const media = veiculo.km_por_litro || 0
 
-                        const abastVeiculo = abastecimentos.filter(a => a.veiculo_id === veiculo.id && a.valor && a.litros)
+                        const abastVeiculo = abastecimentos.filter((abastecimento) => {
+                        const pertenceAoVeiculo = abastecimento.veiculo_id === veiculo.id
+                        const temValoresValidos = abastecimento.valor && abastecimento.litros
+                        const pertenceAoMes = abastecimento.data && abastecimento.data.startsWith(mesSelecionado)
+                        return pertenceAoVeiculo && temValoresValidos && pertenceAoMes
+                    })
                         const totalValorAbast = abastVeiculo.reduce((soma, a) => soma + Number(a.valor), 0)
                         const totalLitrosAbast = abastVeiculo.reduce((soma, a) => soma + Number(a.litros), 0)
                         const pmComb = totalLitrosAbast > 0 ? (totalValorAbast / totalLitrosAbast) : 0
