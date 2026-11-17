@@ -12,6 +12,8 @@ function Romaneios() {
     const [dataInicioEditando, setDataInicioEditando] = useState('')
     const [dataFimEditando, setDataFimEditando] = useState('')
 
+    const [anoSelecionado, setAnoSelecionado] = useState('2026')
+
     // Busca os ciclos no backend assim que a tela abre
     useEffect(() => {
         carregarCiclos()
@@ -146,6 +148,11 @@ function Romaneios() {
         })
     }
 
+    const ciclosFiltrados = ciclos.filter((ciclo) => {
+    if (!ciclo.data_inicio) return true
+    return ciclo.data_inicio.startsWith(anoSelecionado)
+})
+
     // TELA 1: LISTAGEM GERAL DE CICLOS
     return (
         <div>
@@ -162,6 +169,7 @@ function Romaneios() {
                             onChange={(evento) => setNomeNovoCiclo(evento.target.value)} 
                             required 
                         />
+                        
                         
                         <label> Data Início: </label>
                         <input 
@@ -182,11 +190,23 @@ function Romaneios() {
                 </div>
             </div>
 
+            <div>
+    <label>Filtrar Ciclos por Ano: </label>
+    <select 
+        value={anoSelecionado} 
+        onChange={(evento) => setAnoSelecionado(evento.target.value)}
+    >
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+    </select>
+</div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                {ciclos.length === 0 ? (
+                {ciclosFiltrados.length === 0 ? (
                     <p>Nenhum ciclo encontrado.</p>
                 ) : (
-                    ciclos.map(ciclo => (
+                    ciclosFiltrados.map(ciclo => (
                         <div key={ciclo.id}>
                             {cicloEmEdicaoId === ciclo.id ? (
                                 /* MODO DE EDIÇÃO (Formulário) */
